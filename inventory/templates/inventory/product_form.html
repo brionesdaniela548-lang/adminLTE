@@ -1,99 +1,294 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
 {{ title }}
 {% endblock %}
 
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'adminlte/plugins/select2/css/select2.min.css' %}"
+>
+
+<link
+    rel="stylesheet"
+    href="{% static 'adminlte/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css' %}"
+>
+
+{% endblock %}
 
 {% block content %}
 
-
 <div class="content-wrapper">
-
 
     <section class="content-header">
 
         <div class="container-fluid">
 
-            <h1>
-                {{ title }}
-            </h1>
+            <div class="row mb-2">
+
+                <div class="col-sm-6">
+                    <h1>{{ title }}</h1>
+                </div>
+
+                <div class="col-sm-6">
+
+                    <ol class="breadcrumb float-sm-right">
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'dashboard' %}">
+                                Inicio
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'products' %}">
+                                Productos
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item active">
+                            {{ title }}
+                        </li>
+
+                    </ol>
+
+                </div>
+
+            </div>
 
         </div>
 
     </section>
-
-
 
     <section class="content">
 
         <div class="container-fluid">
 
+            <div class="row">
 
-            <div class="card card-primary">
+                <div class="col-md-8">
 
+                    <div class="card card-primary">
 
-                <div class="card-header">
+                        <div class="card-header">
 
-                    <h3 class="card-title">
-                        Datos del Producto
-                    </h3>
+                            <h3 class="card-title">
+                                Datos del Producto
+                            </h3>
+
+                        </div>
+
+                        <form method="POST" novalidate>
+
+                            {% csrf_token %}
+
+                            <div class="card-body">
+
+                                {% if form.non_field_errors %}
+
+                                    <div class="alert alert-danger">
+
+                                        {% for error in form.non_field_errors %}
+
+                                            <p class="mb-0">
+                                                {{ error }}
+                                            </p>
+
+                                        {% endfor %}
+
+                                    </div>
+
+                                {% endif %}
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.codigo.id_for_label }}">
+                                        Código
+                                    </label>
+
+                                    {{ form.codigo }}
+
+                                    {% for error in form.codigo.errors %}
+
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.nombre.id_for_label }}">
+                                        Nombre
+                                    </label>
+
+                                    {{ form.nombre }}
+
+                                    {% for error in form.nombre.errors %}
+
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.descripcion.id_for_label }}">
+                                        Descripción
+                                    </label>
+
+                                    {{ form.descripcion }}
+
+                                    {% for error in form.descripcion.errors %}
+
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.categoria.id_for_label }}">
+                                        Categoría
+                                    </label>
+
+                                    {{ form.categoria }}
+
+                                    {% for error in form.categoria.errors %}
+
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.stock.id_for_label }}">
+                                        Stock
+                                    </label>
+
+                                    {{ form.stock }}
+
+                                    {% for error in form.stock.errors %}
+
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.precio.id_for_label }}">
+                                        Precio
+                                    </label>
+
+                                    {{ form.precio }}
+
+                                    {% for error in form.precio.errors %}
+
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <div class="custom-control custom-switch">
+
+                                        {{ form.estado }}
+
+                                        <label
+                                            class="custom-control-label"
+                                            for="{{ form.estado.id_for_label }}"
+                                        >
+                                            Producto activo
+                                        </label>
+
+                                    </div>
+
+                                    {% for error in form.estado.errors %}
+
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+                            <div class="card-footer">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary"
+                                >
+
+                                    <i class="fas fa-save"></i>
+                                    Guardar
+
+                                </button>
+
+                                <a
+                                    href="{% url 'products' %}"
+                                    class="btn btn-secondary"
+                                >
+
+                                    <i class="fas fa-times"></i>
+                                    Cancelar
+
+                                </a>
+
+                            </div>
+
+                        </form>
+
+                    </div>
 
                 </div>
 
-
-
-                <form method="POST">
-
-                    {% csrf_token %}
-
-
-                    <div class="card-body">
-
-
-                        {{ form.as_p }}
-
-
-                    </div>
-
-
-
-                    <div class="card-footer">
-
-
-                        <button
-                            type="submit"
-                            class="btn btn-primary">
-
-                            Guardar
-
-                        </button>
-
-
-                        <a
-                            href="{% url 'products' %}"
-                            class="btn btn-secondary">
-
-                            Cancelar
-
-                        </a>
-
-
-                    </div>
-
-
-                </form>
-
-
             </div>
-
 
         </div>
 
     </section>
 
-
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+
+<script src="{% static 'adminlte/plugins/select2/js/select2.full.min.js' %}"></script>
+
+<script>
+    $(function () {
+        $(".select2").select2({
+            theme: "bootstrap4",
+            width: "100%"
+        });
+    });
+</script>
 
 {% endblock %}
