@@ -1,137 +1,192 @@
 {% extends "base.html" %}
 
-
-
 {% block title %}
-
 {{ title }}
-
 {% endblock %}
-
-
-
 
 {% block content %}
 
-
-
 <div class="content-wrapper">
 
+    <section class="content-header">
 
-<section class="content-header">
+        <div class="container-fluid">
 
+            <div class="row mb-2">
 
-<div class="container-fluid">
+                <div class="col-sm-6">
+                    <h1>{{ title }}</h1>
+                </div>
 
+                <div class="col-sm-6">
 
-<h1>
+                    <ol class="breadcrumb float-sm-right">
 
-{{ title }}
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'dashboard' %}">
+                                Inicio
+                            </a>
+                        </li>
 
-</h1>
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'categories' %}">
+                                Categorías
+                            </a>
+                        </li>
 
+                        <li class="breadcrumb-item active">
+                            {{ title }}
+                        </li>
+
+                    </ol>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="content">
+
+        <div class="container-fluid">
+
+            <div class="row">
+
+                <div class="col-md-8">
+
+                    <div class="card card-primary">
+
+                        <div class="card-header">
+
+                            <h3 class="card-title">
+                                Datos de Categoría
+                            </h3>
+
+                        </div>
+
+                        <form method="POST" novalidate>
+
+                            {% csrf_token %}
+
+                            <div class="card-body">
+
+                                {% if form.non_field_errors %}
+
+                                    <div class="alert alert-danger">
+
+                                        {% for error in form.non_field_errors %}
+
+                                            <p class="mb-0">
+                                                {{ error }}
+                                            </p>
+
+                                        {% endfor %}
+
+                                    </div>
+
+                                {% endif %}
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.nombre.id_for_label }}">
+                                        Nombre
+                                    </label>
+
+                                    {{ form.nombre }}
+
+                                    {% for error in form.nombre.errors %}
+
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.descripcion.id_for_label }}">
+                                        Descripción
+                                    </label>
+
+                                    {{ form.descripcion }}
+
+                                    {% for error in form.descripcion.errors %}
+
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <div class="custom-control custom-switch">
+
+                                        {{ form.estado }}
+
+                                        <label
+                                            class="custom-control-label"
+                                            for="{{ form.estado.id_for_label }}"
+                                        >
+                                            Categoría activa
+                                        </label>
+
+                                    </div>
+
+                                    {% for error in form.estado.errors %}
+
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+                            <div class="card-footer">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary"
+                                >
+
+                                    <i class="fas fa-save"></i>
+                                    Guardar
+
+                                </button>
+
+                                <a
+                                    href="{% url 'categories' %}"
+                                    class="btn btn-secondary"
+                                >
+
+                                    <i class="fas fa-times"></i>
+                                    Cancelar
+
+                                </a>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
 
 </div>
-
-
-</section>
-
-
-
-
-
-<section class="content">
-
-
-<div class="container-fluid">
-
-
-
-<div class="card card-primary">
-
-
-
-<div class="card-header">
-
-
-<h3 class="card-title">
-
-Datos de Categoría
-
-</h3>
-
-
-</div>
-
-
-
-
-
-<form method="POST">
-
-
-{% csrf_token %}
-
-
-
-<div class="card-body">
-
-
-{{ form.as_p }}
-
-
-</div>
-
-
-
-
-<div class="card-footer">
-
-
-<button type="submit"
-class="btn btn-primary">
-
-
-Guardar
-
-
-</button>
-
-
-
-<a href="{% url 'categories' %}"
-class="btn btn-secondary">
-
-
-Cancelar
-
-
-</a>
-
-
-</div>
-
-
-
-
-</form>
-
-
-
-</div>
-
-
-
-</div>
-
-
-</section>
-
-
-
-</div>
-
-
-
 
 {% endblock %}

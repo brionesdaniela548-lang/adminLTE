@@ -1,14 +1,27 @@
-```html
 {% load static %}
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Iniciar sesión</title>
 
-    <link rel="stylesheet" href="{% static 'adminlte/plugins/fontawesome-free/css/all.css' %}">
-    <link rel="stylesheet" href="{% static 'adminlte/dist/css/adminlte.css' %}">
+    <link
+        rel="stylesheet"
+        href="{% static 'adminlte/plugins/fontawesome-free/css/all.css' %}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'adminlte/dist/css/adminlte.css' %}"
+    >
 </head>
 
 <body class="hold-transition login-page">
@@ -16,7 +29,9 @@
 <div class="login-box">
 
     <div class="login-logo">
-        <b>Sistema</b> Inventario
+
+        <b>Sistema Inventario</b>
+
     </div>
 
     <div class="card">
@@ -28,11 +43,36 @@
             </p>
 
             {% if messages %}
+
                 {% for message in messages %}
-                    <div class="alert alert-danger">
+
+                    <div class="alert
+                        {% if message.tags == 'success' %}
+                            alert-success
+                        {% elif message.tags == 'error' %}
+                            alert-danger
+                        {% else %}
+                            alert-info
+                        {% endif %}
+                        alert-dismissible fade show"
+                    >
+
                         {{ message }}
+
+                        <button
+                            type="button"
+                            class="close"
+                            data-dismiss="alert"
+                        >
+
+                            <span>&times;</span>
+
+                        </button>
+
                     </div>
+
                 {% endfor %}
+
             {% endif %}
 
             <form method="POST">
@@ -45,12 +85,19 @@
                         type="text"
                         name="username"
                         class="form-control"
-                        placeholder="Usuario">
+                        placeholder="Usuario"
+                        required
+                        autofocus
+                    >
 
                     <div class="input-group-append">
+
                         <div class="input-group-text">
+
                             <span class="fas fa-user"></span>
+
                         </div>
+
                     </div>
 
                 </div>
@@ -61,34 +108,53 @@
                         type="password"
                         name="password"
                         class="form-control"
-                        placeholder="Contraseña">
+                        placeholder="Contraseña"
+                        required
+                    >
 
                     <div class="input-group-append">
+
                         <div class="input-group-text">
+
                             <span class="fas fa-lock"></span>
+
                         </div>
+
                     </div>
 
                 </div>
 
-                <button class="btn btn-primary btn-block">
+                <button
+                    type="submit"
+                    class="btn btn-primary btn-block"
+                >
+
                     Iniciar sesión
+
                 </button>
 
             </form>
 
             <div class="text-center mt-3">
+
                 <a href="{% url 'recover_password' %}">
+
                     ¿Olvidaste tu contraseña?
+
                 </a>
+
             </div>
 
             <hr>
 
             <div class="text-center">
+
                 <a href="{% url 'register' %}">
+
                     Crear una cuenta
+
                 </a>
+
             </div>
 
         </div>
@@ -98,9 +164,11 @@
 </div>
 
 <script src="{% static 'adminlte/plugins/jquery/jquery.js' %}"></script>
+
 <script src="{% static 'adminlte/plugins/bootstrap/js/bootstrap.bundle.js' %}"></script>
+
 <script src="{% static 'adminlte/dist/js/adminlte.js' %}"></script>
 
 </body>
+
 </html>
-```
