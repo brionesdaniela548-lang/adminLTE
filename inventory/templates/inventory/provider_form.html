@@ -1,0 +1,228 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <section class="content-header">
+
+        <div class="container-fluid">
+
+            <div class="row mb-2">
+
+                <div class="col-sm-6">
+                    <h1>{{ title }}</h1>
+                </div>
+
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'dashboard' %}">
+                                Inicio
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'providers' %}">
+                                Proveedores
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item active">
+                            {{ title }}
+                        </li>
+
+                    </ol>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="content">
+
+        <div class="container-fluid">
+
+            <div class="row">
+
+                <div class="col-md-8">
+
+                    <div class="card card-primary">
+
+                        <div class="card-header">
+
+                            <h3 class="card-title">
+                                Datos del proveedor
+                            </h3>
+
+                        </div>
+
+                        <form method="POST" novalidate>
+
+                            {% csrf_token %}
+
+                            <div class="card-body">
+
+                                {% if form.non_field_errors %}
+
+                                    <div class="alert alert-danger">
+
+                                        {% for error in form.non_field_errors %}
+                                            <p class="mb-0">
+                                                {{ error }}
+                                            </p>
+                                        {% endfor %}
+
+                                    </div>
+
+                                {% endif %}
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.nombre.id_for_label }}">
+                                        Nombre
+                                    </label>
+
+                                    {{ form.nombre }}
+
+                                    {% for error in form.nombre.errors %}
+                                        <small class="text-danger">
+                                            {{ error }}
+                                        </small>
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.empresa.id_for_label }}">
+                                        Empresa
+                                    </label>
+
+                                    {{ form.empresa }}
+
+                                    {% for error in form.empresa.errors %}
+                                        <small class="text-danger">
+                                            {{ error }}
+                                        </small>
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.telefono.id_for_label }}">
+                                        Teléfono
+                                    </label>
+
+                                    {{ form.telefono }}
+
+                                    {% for error in form.telefono.errors %}
+                                        <small class="text-danger">
+                                            {{ error }}
+                                        </small>
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.correo.id_for_label }}">
+                                        Correo electrónico
+                                    </label>
+
+                                    {{ form.correo }}
+
+                                    {% for error in form.correo.errors %}
+                                        <small class="text-danger">
+                                            {{ error }}
+                                        </small>
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.direccion.id_for_label }}">
+                                        Dirección
+                                    </label>
+
+                                    {{ form.direccion }}
+
+                                    {% for error in form.direccion.errors %}
+                                        <small class="text-danger">
+                                            {{ error }}
+                                        </small>
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <div class="form-check">
+
+                                        {{ form.estado }}
+
+                                        <label class="form-check-label"
+                                               for="{{ form.estado.id_for_label }}">
+
+                                            Proveedor activo
+
+                                        </label>
+
+                                    </div>
+
+                                    {% for error in form.estado.errors %}
+                                        <small class="text-danger">
+                                            {{ error }}
+                                        </small>
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+                            <div class="card-footer">
+
+                                <button type="submit"
+                                        class="btn btn-primary">
+
+                                    <i class="fas fa-save"></i>
+                                    Guardar
+
+                                </button>
+
+                                <a href="{% url 'providers' %}"
+                                   class="btn btn-secondary">
+
+                                    <i class="fas fa-times"></i>
+                                    Cancelar
+
+                                </a>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
+```

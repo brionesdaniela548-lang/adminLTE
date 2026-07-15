@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}
+Salidas de Inventario
+{% endblock %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <section class="content-header">
+
+        <div class="container-fluid">
+
+            <div class="row mb-2">
+
+                <div class="col-sm-6">
+                    <h1>Salidas de Inventario</h1>
+                </div>
+
+                <div class="col-sm-6 text-right">
+
+                    <a href="{% url 'exit_create' %}"
+                       class="btn btn-danger">
+
+                        <i class="fas fa-minus-circle"></i>
+                        Registrar Salida
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="content">
+
+        <div class="container-fluid">
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="alert
+                        {% if message.tags == 'success' %}
+                            alert-success
+                        {% elif message.tags == 'error' %}
+                            alert-danger
+                        {% else %}
+                            alert-info
+                        {% endif %}
+                        alert-dismissible fade show">
+
+                        {{ message }}
+
+                        <button type="button"
+                                class="close"
+                                data-dismiss="alert">
+
+                            <span>&times;</span>
+
+                        </button>
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h3 class="card-title">
+                        Historial de salidas
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="table-responsive">
+
+                        <table id="exitsTable"
+                               class="table table-bordered table-striped table-hover">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Destinatario</th>
+                                    <th>Observación</th>
+                                    <th width="130">Acciones</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {% for exit in exits %}
+
+                                    <tr>
+
+                                        <td>
+                                            {{ exit.fecha|date:"d/m/Y H:i" }}
+                                        </td>
+
+                                        <td>
+                                            {{ exit.producto }}
+                                        </td>
+
+                                        <td>
+
+                                            <span class="badge badge-danger">
+                                                -{{ exit.cantidad }}
+                                            </span>
+
+                                        </td>
+
+                                        <td>
+                                            {{ exit.destinatario|default:"Sin destinatario" }}
+                                        </td>
+
+                                        <td>
+                                            {{ exit.observacion|default:"Sin observación" }}
+                                        </td>
+
+                                        <td>
+
+                                            <a href="{% url 'exit_update' exit.id %}"
+                                               class="btn btn-warning btn-sm"
+                                               title="Editar">
+
+                                                <i class="fas fa-edit"></i>
+
+                                            </a>
+
+                                            <form method="POST"
+                                                  action="{% url 'exit_delete' exit.id %}"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('¿Está seguro de eliminar esta salida? Las unidades serán devueltas al stock.');">
+
+                                                {% csrf_token %}
+
+                                                <button type="submit"
+                                                        class="btn btn-danger btn-sm"
+                                                        title="Eliminar">
+
+                                                    <i class="fas fa-trash"></i>
+
+                                                </button>
+
+                                            </form>
+
+                                        </td>
+
+                                    </tr>
+
+                                {% empty %}
+
+                                    <tr>
+
+                                        <td colspan="6"
+                                            class="text-center">
+
+                                            No existen salidas registradas.
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+    $(function () {
+        $("#exitsTable").DataTable({
+            responsive: true,
+            autoWidth: false,
+            order: [[0, "desc"]],
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+            }
+        });
+    });
+</script>
+
+{% endblock %}

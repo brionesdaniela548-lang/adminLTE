@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}
+Entradas de Inventario
+{% endblock %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <section class="content-header">
+
+        <div class="container-fluid">
+
+            <div class="row mb-2">
+
+                <div class="col-sm-6">
+                    <h1>Entradas de Inventario</h1>
+                </div>
+
+                <div class="col-sm-6 text-right">
+
+                    <a href="{% url 'entry_create' %}"
+                       class="btn btn-primary">
+
+                        <i class="fas fa-plus"></i>
+                        Registrar Entrada
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="content">
+
+        <div class="container-fluid">
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="alert
+                        {% if message.tags == 'success' %}
+                            alert-success
+                        {% elif message.tags == 'error' %}
+                            alert-danger
+                        {% else %}
+                            alert-info
+                        {% endif %}
+                        alert-dismissible fade show">
+
+                        {{ message }}
+
+                        <button type="button"
+                                class="close"
+                                data-dismiss="alert">
+
+                            <span>&times;</span>
+
+                        </button>
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h3 class="card-title">
+                        Historial de entradas
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="table-responsive">
+
+                        <table id="entriesTable"
+                               class="table table-bordered table-striped table-hover">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Producto</th>
+                                    <th>Proveedor</th>
+                                    <th>Cantidad</th>
+                                    <th>Observación</th>
+                                    <th width="130">Acciones</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {% for entry in entries %}
+
+                                    <tr>
+
+                                        <td>
+                                            {{ entry.fecha|date:"d/m/Y H:i" }}
+                                        </td>
+
+                                        <td>
+                                            {{ entry.producto }}
+                                        </td>
+
+                                        <td>
+                                            {{ entry.proveedor }}
+                                        </td>
+
+                                        <td>
+
+                                            <span class="badge badge-success">
+                                                +{{ entry.cantidad }}
+                                            </span>
+
+                                        </td>
+
+                                        <td>
+                                            {{ entry.observacion|default:"Sin observación" }}
+                                        </td>
+
+                                        <td>
+
+                                            <a href="{% url 'entry_update' entry.id %}"
+                                               class="btn btn-warning btn-sm"
+                                               title="Editar">
+
+                                                <i class="fas fa-edit"></i>
+
+                                            </a>
+
+                                            <form method="POST"
+                                                  action="{% url 'entry_delete' entry.id %}"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('¿Está seguro de eliminar esta entrada? El stock del producto será actualizado.');">
+
+                                                {% csrf_token %}
+
+                                                <button type="submit"
+                                                        class="btn btn-danger btn-sm"
+                                                        title="Eliminar">
+
+                                                    <i class="fas fa-trash"></i>
+
+                                                </button>
+
+                                            </form>
+
+                                        </td>
+
+                                    </tr>
+
+                                {% empty %}
+
+                                    <tr>
+
+                                        <td colspan="6"
+                                            class="text-center">
+
+                                            No existen entradas registradas.
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+    $(function () {
+        $("#entriesTable").DataTable({
+            responsive: true,
+            autoWidth: false,
+            order: [[0, "desc"]],
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+            }
+        });
+    });
+</script>
+
+{% endblock %}

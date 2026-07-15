@@ -1,0 +1,106 @@
+```html
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar sesión</title>
+
+    <link rel="stylesheet" href="{% static 'adminlte/plugins/fontawesome-free/css/all.css' %}">
+    <link rel="stylesheet" href="{% static 'adminlte/dist/css/adminlte.css' %}">
+</head>
+
+<body class="hold-transition login-page">
+
+<div class="login-box">
+
+    <div class="login-logo">
+        <b>Sistema</b> Inventario
+    </div>
+
+    <div class="card">
+
+        <div class="card-body login-card-body">
+
+            <p class="login-box-msg">
+                Iniciar sesión
+            </p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <div class="input-group mb-3">
+
+                    <input
+                        type="text"
+                        name="username"
+                        class="form-control"
+                        placeholder="Usuario">
+
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-user"></span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="input-group mb-3">
+
+                    <input
+                        type="password"
+                        name="password"
+                        class="form-control"
+                        placeholder="Contraseña">
+
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <button class="btn btn-primary btn-block">
+                    Iniciar sesión
+                </button>
+
+            </form>
+
+            <div class="text-center mt-3">
+                <a href="{% url 'recover_password' %}">
+                    ¿Olvidaste tu contraseña?
+                </a>
+            </div>
+
+            <hr>
+
+            <div class="text-center">
+                <a href="{% url 'register' %}">
+                    Crear una cuenta
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="{% static 'adminlte/plugins/jquery/jquery.js' %}"></script>
+<script src="{% static 'adminlte/plugins/bootstrap/js/bootstrap.bundle.js' %}"></script>
+<script src="{% static 'adminlte/dist/js/adminlte.js' %}"></script>
+
+</body>
+</html>
+```

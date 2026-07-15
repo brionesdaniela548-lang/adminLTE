@@ -1,0 +1,713 @@
+{% extends "base.html" %}
+
+{% block title %}
+Reportes
+{% endblock %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <section class="content-header">
+
+        <div class="container-fluid">
+
+            <div class="row mb-2">
+
+                <div class="col-sm-6">
+                    <h1>Reportes</h1>
+                </div>
+
+                <div class="col-sm-6">
+
+                    <ol class="breadcrumb float-sm-right">
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'dashboard' %}">
+                                Inicio
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item active">
+                            Reportes
+                        </li>
+
+                    </ol>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="content">
+
+        <div class="container-fluid">
+
+            <!-- TARJETAS DE RESUMEN -->
+
+            <div class="row">
+
+                <div class="col-lg-3 col-6">
+
+                    <div class="small-box bg-info">
+
+                        <div class="inner">
+
+                            <h3>
+                                {{ total_productos }}
+                            </h3>
+
+                            <p>
+                                Productos registrados
+                            </p>
+
+                        </div>
+
+                        <div class="icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-3 col-6">
+
+                    <div class="small-box bg-success">
+
+                        <div class="inner">
+
+                            <h3>
+                                {{ stock_total }}
+                            </h3>
+
+                            <p>
+                                Unidades en stock
+                            </p>
+
+                        </div>
+
+                        <div class="icon">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-3 col-6">
+
+                    <div class="small-box bg-warning">
+
+                        <div class="inner">
+
+                            <h3>
+                                ${{ valor_inventario|floatformat:2 }}
+                            </h3>
+
+                            <p>
+                                Valor del inventario
+                            </p>
+
+                        </div>
+
+                        <div class="icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-3 col-6">
+
+                    <div class="small-box bg-danger">
+
+                        <div class="inner">
+
+                            <h3>
+                                {{ productos_stock_bajo }}
+                            </h3>
+
+                            <p>
+                                Productos con stock bajo
+                            </p>
+
+                        </div>
+
+                        <div class="icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-4">
+
+                    <div class="info-box">
+
+                        <span class="info-box-icon bg-primary">
+                            <i class="fas fa-tags"></i>
+                        </span>
+
+                        <div class="info-box-content">
+
+                            <span class="info-box-text">
+                                Categorías
+                            </span>
+
+                            <span class="info-box-number">
+                                {{ total_categorias }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <div class="info-box">
+
+                        <span class="info-box-icon bg-success">
+                            <i class="fas fa-arrow-circle-down"></i>
+                        </span>
+
+                        <div class="info-box-content">
+
+                            <span class="info-box-text">
+                                Unidades ingresadas
+                            </span>
+
+                            <span class="info-box-number">
+                                {{ total_entradas }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <div class="info-box">
+
+                        <span class="info-box-icon bg-danger">
+                            <i class="fas fa-arrow-circle-up"></i>
+                        </span>
+
+                        <div class="info-box-content">
+
+                            <span class="info-box-text">
+                                Unidades retiradas
+                            </span>
+
+                            <span class="info-box-number">
+                                {{ total_salidas }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- PESTAÑAS -->
+
+            <div class="card card-primary card-outline">
+
+                <div class="card-header p-2">
+
+                    <ul class="nav nav-pills">
+
+                        <li class="nav-item">
+
+                            <a class="nav-link active"
+                               href="#productos"
+                               data-toggle="tab">
+
+                                <i class="fas fa-box mr-1"></i>
+                                Productos
+
+                            </a>
+
+                        </li>
+
+                        <li class="nav-item">
+
+                            <a class="nav-link"
+                               href="#categorias"
+                               data-toggle="tab">
+
+                                <i class="fas fa-tags mr-1"></i>
+                                Categorías
+
+                            </a>
+
+                        </li>
+
+                        <li class="nav-item">
+
+                            <a class="nav-link"
+                               href="#entradas"
+                               data-toggle="tab">
+
+                                <i class="fas fa-arrow-circle-down mr-1"></i>
+                                Entradas
+
+                            </a>
+
+                        </li>
+
+                        <li class="nav-item">
+
+                            <a class="nav-link"
+                               href="#salidas"
+                               data-toggle="tab">
+
+                                <i class="fas fa-arrow-circle-up mr-1"></i>
+                                Salidas
+
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="tab-content">
+
+                        <!-- REPORTE DE PRODUCTOS -->
+
+                        <div class="active tab-pane"
+                             id="productos">
+
+                            <div class="table-responsive">
+
+                                <table id="productsReportTable"
+                                       class="table table-bordered table-striped table-hover">
+
+                                    <thead>
+
+                                        <tr>
+                                            <th>Código</th>
+                                            <th>Producto</th>
+                                            <th>Categoría</th>
+                                            <th>Stock</th>
+                                            <th>Precio</th>
+                                            <th>Valor total</th>
+                                            <th>Estado</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                        {% for product in productos %}
+
+                                            <tr>
+
+                                                <td>
+                                                    {{ product.codigo }}
+                                                </td>
+
+                                                <td>
+                                                    {{ product.nombre }}
+                                                </td>
+
+                                                <td>
+                                                    {{ product.categoria.nombre }}
+                                                </td>
+
+                                                <td>
+
+                                                    {% if product.stock == 0 %}
+
+                                                        <span class="badge badge-danger">
+                                                            Agotado
+                                                        </span>
+
+                                                    {% elif product.stock <= 5 %}
+
+                                                        <span class="badge badge-warning">
+                                                            {{ product.stock }}
+                                                        </span>
+
+                                                    {% else %}
+
+                                                        <span class="badge badge-success">
+                                                            {{ product.stock }}
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </td>
+
+                                                <td>
+                                                    ${{ product.precio|floatformat:2 }}
+                                                </td>
+
+                                                <td>
+                                                    ${{ product.valor_total|floatformat:2 }}
+                                                </td>
+
+                                                <td>
+
+                                                    {% if product.estado %}
+
+                                                        <span class="badge badge-success">
+                                                            Activo
+                                                        </span>
+
+                                                    {% else %}
+
+                                                        <span class="badge badge-secondary">
+                                                            Inactivo
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% empty %}
+
+                                            <tr>
+
+                                                <td colspan="7"
+                                                    class="text-center">
+
+                                                    No existen productos registrados.
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                        <!-- REPORTE DE CATEGORÍAS -->
+
+                        <div class="tab-pane"
+                             id="categorias">
+
+                            <div class="table-responsive">
+
+                                <table id="categoriesReportTable"
+                                       class="table table-bordered table-striped table-hover">
+
+                                    <thead>
+
+                                        <tr>
+                                            <th>Categoría</th>
+                                            <th>Descripción</th>
+                                            <th>Productos</th>
+                                            <th>Stock acumulado</th>
+                                            <th>Estado</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                        {% for category in categorias %}
+
+                                            <tr>
+
+                                                <td>
+                                                    {{ category.nombre }}
+                                                </td>
+
+                                                <td>
+                                                    {{ category.descripcion|default:"Sin descripción" }}
+                                                </td>
+
+                                                <td>
+                                                    {{ category.total_productos }}
+                                                </td>
+
+                                                <td>
+                                                    {{ category.stock_categoria|default:0 }}
+                                                </td>
+
+                                                <td>
+
+                                                    {% if category.estado %}
+
+                                                        <span class="badge badge-success">
+                                                            Activa
+                                                        </span>
+
+                                                    {% else %}
+
+                                                        <span class="badge badge-secondary">
+                                                            Inactiva
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% empty %}
+
+                                            <tr>
+
+                                                <td colspan="5"
+                                                    class="text-center">
+
+                                                    No existen categorías registradas.
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                        <!-- REPORTE DE ENTRADAS -->
+
+                        <div class="tab-pane"
+                             id="entradas">
+
+                            <div class="table-responsive">
+
+                                <table id="entriesReportTable"
+                                       class="table table-bordered table-striped table-hover">
+
+                                    <thead>
+
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Producto</th>
+                                            <th>Proveedor</th>
+                                            <th>Cantidad</th>
+                                            <th>Observación</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                        {% for entry in entradas %}
+
+                                            <tr>
+
+                                                <td>
+                                                    {{ entry.fecha|date:"d/m/Y H:i" }}
+                                                </td>
+
+                                                <td>
+                                                    {{ entry.producto }}
+                                                </td>
+
+                                                <td>
+                                                    {{ entry.proveedor }}
+                                                </td>
+
+                                                <td>
+
+                                                    <span class="badge badge-success">
+                                                        +{{ entry.cantidad }}
+                                                    </span>
+
+                                                </td>
+
+                                                <td>
+                                                    {{ entry.observacion|default:"Sin observación" }}
+                                                </td>
+
+                                            </tr>
+
+                                        {% empty %}
+
+                                            <tr>
+
+                                                <td colspan="5"
+                                                    class="text-center">
+
+                                                    No existen entradas registradas.
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                        <!-- REPORTE DE SALIDAS -->
+
+                        <div class="tab-pane"
+                             id="salidas">
+
+                            <div class="table-responsive">
+
+                                <table id="exitsReportTable"
+                                       class="table table-bordered table-striped table-hover">
+
+                                    <thead>
+
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Destinatario</th>
+                                            <th>Observación</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                        {% for exit in salidas %}
+
+                                            <tr>
+
+                                                <td>
+                                                    {{ exit.fecha|date:"d/m/Y H:i" }}
+                                                </td>
+
+                                                <td>
+                                                    {{ exit.producto }}
+                                                </td>
+
+                                                <td>
+
+                                                    <span class="badge badge-danger">
+                                                        -{{ exit.cantidad }}
+                                                    </span>
+
+                                                </td>
+
+                                                <td>
+                                                    {{ exit.destinatario|default:"Sin destinatario" }}
+                                                </td>
+
+                                                <td>
+                                                    {{ exit.observacion|default:"Sin observación" }}
+                                                </td>
+
+                                            </tr>
+
+                                        {% empty %}
+
+                                            <tr>
+
+                                                <td colspan="5"
+                                                    class="text-center">
+
+                                                    No existen salidas registradas.
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+    $(function () {
+        const dataTableOptions = {
+            responsive: true,
+            autoWidth: false,
+            pageLength: 10,
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+            }
+        };
+
+        $("#productsReportTable").DataTable(
+            dataTableOptions
+        );
+
+        $("#categoriesReportTable").DataTable(
+            dataTableOptions
+        );
+
+        $("#entriesReportTable").DataTable({
+            ...dataTableOptions,
+            order: [[0, "desc"]]
+        });
+
+        $("#exitsReportTable").DataTable({
+            ...dataTableOptions,
+            order: [[0, "desc"]]
+        });
+
+        $('a[data-toggle="tab"]').on(
+            "shown.bs.tab",
+            function () {
+                $.fn.dataTable
+                    .tables({
+                        visible: true,
+                        api: true
+                    })
+                    .columns
+                    .adjust();
+            }
+        );
+    });
+</script>
+
+{% endblock %}

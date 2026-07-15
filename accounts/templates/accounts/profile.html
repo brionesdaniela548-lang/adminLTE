@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}
+Mi Perfil
+{% endblock %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <section class="content-header">
+
+        <div class="container-fluid">
+
+            <div class="row mb-2">
+
+                <div class="col-sm-6">
+                    <h1>Mi Perfil</h1>
+                </div>
+
+                <div class="col-sm-6">
+
+                    <ol class="breadcrumb float-sm-right">
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'dashboard' %}">
+                                Inicio
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item active">
+                            Mi Perfil
+                        </li>
+
+                    </ol>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="content">
+
+        <div class="container-fluid">
+
+            <div class="row">
+
+                <div class="col-md-4">
+
+                    <div class="card card-primary card-outline">
+
+                        <div class="card-body box-profile">
+
+                            <div class="text-center">
+
+                                <i class="fas fa-user-circle fa-6x text-primary"></i>
+
+                            </div>
+
+                            <h3 class="profile-username text-center mt-3">
+
+                                {{ user.get_full_name|default:user.username }}
+
+                            </h3>
+
+                            <p class="text-muted text-center">
+
+                                {{ user.username }}
+
+                            </p>
+
+                            <ul class="list-group list-group-unbordered mb-3">
+
+                                <li class="list-group-item">
+
+                                    <b>Correo</b>
+
+                                    <span class="float-right">
+                                        {{ user.email|default:"Sin correo" }}
+                                    </span>
+
+                                </li>
+
+                                <li class="list-group-item">
+
+                                    <b>Nombre</b>
+
+                                    <span class="float-right">
+                                        {{ user.first_name|default:"Sin nombre" }}
+                                    </span>
+
+                                </li>
+
+                                <li class="list-group-item">
+
+                                    <b>Apellido</b>
+
+                                    <span class="float-right">
+                                        {{ user.last_name|default:"Sin apellido" }}
+                                    </span>
+
+                                </li>
+
+                                <li class="list-group-item">
+
+                                    <b>Usuario desde</b>
+
+                                    <span class="float-right">
+                                        {{ user.date_joined|date:"d/m/Y" }}
+                                    </span>
+
+                                </li>
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-8">
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <h3 class="card-title">
+
+                                <i class="fas fa-shield-alt mr-1"></i>
+
+                                Seguridad de la cuenta
+
+                            </h3>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="form-group">
+
+                                <label>
+                                    Pregunta de seguridad
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    value="{% if profile %}{{ profile.get_security_question_display }}{% else %}No configurada{% endif %}"
+                                    readonly
+                                >
+
+                            </div>
+
+                            <div class="alert alert-info">
+
+                                <i class="fas fa-info-circle"></i>
+
+                                La respuesta de seguridad no se muestra por protección.
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

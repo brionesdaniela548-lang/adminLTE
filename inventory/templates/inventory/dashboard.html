@@ -1,0 +1,566 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <section class="content-header">
+        <div class="container-fluid">
+
+            <div class="row mb-2">
+
+                <div class="col-sm-6">
+                    <h1>
+                        <i class="fas fa-tachometer-alt mr-2"></i>
+                        Dashboard
+                    </h1>
+                </div>
+
+                <div class="col-sm-6">
+
+                    <ol class="breadcrumb float-sm-right">
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'dashboard' %}">
+                                Inicio
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item active">
+                            Dashboard
+                        </li>
+
+                    </ol>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <section class="content">
+
+        <div class="container-fluid">
+
+            <!-- TARJETAS -->
+
+            <div class="row">
+
+                <div class="col-lg-3 col-md-6 col-sm-6">
+
+                    <div class="info-box shadow-sm">
+
+                        <span class="info-box-icon bg-info">
+
+                            <i class="fas fa-box"></i>
+
+                        </span>
+
+                        <div class="info-box-content">
+
+                            <span class="info-box-text">
+                                Productos
+                            </span>
+
+                            <span class="info-box-number">
+                                {{ total_productos }}
+                            </span>
+
+                            <a href="{% url 'products' %}">
+                                Ver productos
+                                <i class="fas fa-arrow-circle-right"></i>
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-3 col-md-6 col-sm-6">
+
+                    <div class="info-box shadow-sm">
+
+                        <span class="info-box-icon bg-success">
+
+                            <i class="fas fa-tags"></i>
+
+                        </span>
+
+                        <div class="info-box-content">
+
+                            <span class="info-box-text">
+                                Categorías
+                            </span>
+
+                            <span class="info-box-number">
+                                {{ total_categorias }}
+                            </span>
+
+                            <a href="{% url 'categories' %}">
+                                Ver categorías
+                                <i class="fas fa-arrow-circle-right"></i>
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-3 col-md-6 col-sm-6">
+
+                    <div class="info-box shadow-sm">
+
+                        <span class="info-box-icon bg-warning">
+
+                            <i class="fas fa-users"></i>
+
+                        </span>
+
+                        <div class="info-box-content">
+
+                            <span class="info-box-text">
+                                Usuarios
+                            </span>
+
+                            <span class="info-box-number">
+                                {{ total_usuarios }}
+                            </span>
+
+                            <span class="text-muted">
+                                Usuarios registrados
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-3 col-md-6 col-sm-6">
+
+                    <div class="info-box shadow-sm">
+
+                        <span class="info-box-icon bg-danger">
+
+                            <i class="fas fa-boxes"></i>
+
+                        </span>
+
+                        <div class="info-box-content">
+
+                            <span class="info-box-text">
+                                Stock total
+                            </span>
+
+                            <span class="info-box-number">
+                                {{ stock_total }}
+                            </span>
+
+                            <a href="{% url 'reports' %}">
+                                Ver reportes
+                                <i class="fas fa-arrow-circle-right"></i>
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- GRÁFICO Y STOCK BAJO -->
+
+            <div class="row">
+
+                <div class="col-lg-8">
+
+                    <div class="card card-primary card-outline shadow-sm">
+
+                        <div class="card-header">
+
+                            <h3 class="card-title">
+
+                                <i class="fas fa-chart-bar mr-1"></i>
+
+                                Stock por categoría
+
+                            </h3>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div style="height: 300px; position: relative;">
+
+                                <canvas id="categoryChart"></canvas>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-4">
+
+                    <div class="card card-warning card-outline shadow-sm">
+
+                        <div class="card-header">
+
+                            <h3 class="card-title">
+
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+
+                                Productos con stock bajo
+
+                            </h3>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            {% for product in productos_stock_bajo %}
+
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-3">
+
+                                    <div>
+
+                                        <strong>
+                                            {{ product.nombre }}
+                                        </strong>
+
+                                        <br>
+
+                                        <small class="text-muted">
+                                            Código: {{ product.codigo }}
+                                        </small>
+
+                                    </div>
+
+                                    {% if product.stock == 0 %}
+
+                                        <span class="badge badge-danger">
+                                            Agotado
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge badge-warning">
+                                            {{ product.stock }} unidades
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% empty %}
+
+                                <div class="text-center py-4">
+
+                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+
+                                    <p class="text-muted mb-0">
+                                        No hay productos con stock bajo.
+                                    </p>
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                        <div class="card-footer text-center">
+
+                            <a href="{% url 'products' %}">
+                                Ver todos los productos
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ÚLTIMAS ENTRADAS Y SALIDAS -->
+
+            <div class="row">
+
+                <div class="col-lg-6">
+
+                    <div class="card card-success card-outline shadow-sm">
+
+                        <div class="card-header">
+
+                            <h3 class="card-title">
+
+                                <i class="fas fa-arrow-circle-down mr-1"></i>
+
+                                Últimas entradas
+
+                            </h3>
+
+                            <div class="card-tools">
+
+                                <a href="{% url 'entries' %}">
+                                    Ver todas
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                        <div class="card-body p-0">
+
+                            <div class="table-responsive">
+
+                                <table class="table table-hover mb-0">
+
+                                    <thead>
+
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Proveedor</th>
+                                            <th>Cantidad</th>
+                                            <th>Fecha</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                        {% for entry in ultimas_entradas %}
+
+                                            <tr>
+
+                                                <td>
+                                                    {{ entry.producto.nombre }}
+                                                </td>
+
+                                                <td>
+                                                    {{ entry.proveedor.nombre }}
+                                                </td>
+
+                                                <td>
+
+                                                    <span class="badge badge-success">
+                                                        +{{ entry.cantidad }}
+                                                    </span>
+
+                                                </td>
+
+                                                <td>
+                                                    {{ entry.fecha|date:"d/m/Y H:i" }}
+                                                </td>
+
+                                            </tr>
+
+                                        {% empty %}
+
+                                            <tr>
+
+                                                <td colspan="4"
+                                                    class="text-center text-muted py-4">
+
+                                                    No hay entradas registradas.
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-6">
+
+                    <div class="card card-danger card-outline shadow-sm">
+
+                        <div class="card-header">
+
+                            <h3 class="card-title">
+
+                                <i class="fas fa-arrow-circle-up mr-1"></i>
+
+                                Últimas salidas
+
+                            </h3>
+
+                            <div class="card-tools">
+
+                                <a href="{% url 'exits' %}">
+                                    Ver todas
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                        <div class="card-body p-0">
+
+                            <div class="table-responsive">
+
+                                <table class="table table-hover mb-0">
+
+                                    <thead>
+
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Destinatario</th>
+                                            <th>Cantidad</th>
+                                            <th>Fecha</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                        {% for exit in ultimas_salidas %}
+
+                                            <tr>
+
+                                                <td>
+                                                    {{ exit.producto.nombre }}
+                                                </td>
+
+                                                <td>
+                                                    {{ exit.destinatario|default:"Sin destinatario" }}
+                                                </td>
+
+                                                <td>
+
+                                                    <span class="badge badge-danger">
+                                                        -{{ exit.cantidad }}
+                                                    </span>
+
+                                                </td>
+
+                                                <td>
+                                                    {{ exit.fecha|date:"d/m/Y H:i" }}
+                                                </td>
+
+                                            </tr>
+
+                                        {% empty %}
+
+                                            <tr>
+
+                                                <td colspan="4"
+                                                    class="text-center text-muted py-4">
+
+                                                    No hay salidas registradas.
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{{ nombres_categorias|json_script:"category-names" }}
+{{ cantidades_productos|json_script:"category-values" }}
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const canvas = document.getElementById("categoryChart");
+
+        if (!canvas) {
+            return;
+        }
+
+        const labels = JSON.parse(
+            document.getElementById("category-names").textContent
+        );
+
+        const values = JSON.parse(
+            document.getElementById("category-values").textContent
+        );
+
+        new Chart(canvas, {
+            type: "bar",
+
+            data: {
+                labels: labels,
+
+                datasets: [
+                    {
+                        label: "Unidades en stock",
+                        data: values,
+                        backgroundColor: "rgba(60, 141, 188, 0.65)",
+                        borderColor: "rgba(60, 141, 188, 1)",
+                        borderWidth: 1
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        position: "top"
+                    }
+                },
+
+                scales: {
+                    y: {
+                        beginAtZero: true,
+
+                        ticks: {
+                            precision: 0,
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}

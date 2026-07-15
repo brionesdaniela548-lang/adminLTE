@@ -1,0 +1,59 @@
+```html
+{% load crispy_forms_tags %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pregunta de seguridad</title>
+
+    <link rel="stylesheet" href="{% static 'adminlte/plugins/fontawesome-free/css/all.css' %}">
+    <link rel="stylesheet" href="{% static 'adminlte/dist/css/adminlte.css' %}">
+</head>
+
+<body class="hold-transition login-page">
+
+<div class="login-box">
+
+    <div class="card">
+
+        <div class="card-body login-card-body">
+
+            <h4 class="text-center">
+                Verificación
+            </h4>
+
+            <p class="text-center">
+                <strong>{{ question }}</strong>
+            </p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                {{ form|crispy }}
+
+                <button class="btn btn-success btn-block">
+                    Verificar respuesta
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+```
