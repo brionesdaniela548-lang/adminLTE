@@ -1,12 +1,19 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 
 
-
 class Categoria(models.Model):
+    propietario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="categorias",
+        null=True,
+        blank=True,
+    )
+
     nombre = models.CharField(
-        max_length=100,
-        unique=True
+        max_length=100
     )
 
     descripcion = models.TextField(
@@ -23,14 +30,31 @@ class Categoria(models.Model):
         verbose_name = "Categoría"
         verbose_name_plural = "Categorías"
 
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "propietario",
+                    "nombre",
+                ],
+                name="categoria_unica_por_propietario",
+            ),
+        ]
+
     def __str__(self):
         return self.nombre
 
 
 class Producto(models.Model):
+    propietario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="productos",
+        null=True,
+        blank=True,
+    )
+
     codigo = models.CharField(
-        max_length=20,
-        unique=True
+        max_length=20
     )
 
     nombre = models.CharField(
@@ -70,11 +94,46 @@ class Producto(models.Model):
         verbose_name = "Producto"
         verbose_name_plural = "Productos"
 
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "propietario",
+                    "codigo",
+                ],
+                name="producto_codigo_unico_por_propietario",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+
+        if (
+            self.propietario_id
+            and self.categoria_id
+            and self.categoria.propietario_id != self.propietario_id
+        ):
+            raise ValidationError(
+                {
+                    "categoria": (
+                        "La categoría seleccionada no pertenece "
+                        "a este usuario."
+                    )
+                }
+            )
+
     def __str__(self):
         return f"{self.codigo} - {self.nombre}"
 
 
 class Proveedor(models.Model):
+    propietario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="proveedores",
+        null=True,
+        blank=True,
+    )
+
     nombre = models.CharField(
         max_length=100
     )
@@ -116,6 +175,14 @@ class Proveedor(models.Model):
 
 
 class Entrada(models.Model):
+    propietario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="entradas",
+        null=True,
+        blank=True,
+    )
+
     producto = models.ForeignKey(
         Producto,
         on_delete=models.PROTECT,
@@ -157,6 +224,28 @@ class Entrada(models.Model):
                 }
             )
 
+        if self.propietario_id and self.producto_id:
+            if self.producto.propietario_id != self.propietario_id:
+                raise ValidationError(
+                    {
+                        "producto": (
+                            "El producto seleccionado no pertenece "
+                            "a este usuario."
+                        )
+                    }
+                )
+
+        if self.propietario_id and self.proveedor_id:
+            if self.proveedor.propietario_id != self.propietario_id:
+                raise ValidationError(
+                    {
+                        "proveedor": (
+                            "El proveedor seleccionado no pertenece "
+                            "a este usuario."
+                        )
+                    }
+                )
+
     @transaction.atomic
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -170,17 +259,27 @@ class Entrada(models.Model):
                 pk=entrada_anterior.producto_id
             )
 
-            producto_anterior.stock += entrada_anterior.cantidad
-            producto_anterior.save(update_fields=["stock"])
+            if producto_anterior.stock < entrada_anterior.cantidad:
+                raise ValidationError(
+                    "No se puede modificar la entrada porque el stock "
+                    "actual es menor que la cantidad anterior."
+                )
+
+            producto_anterior.stock -= entrada_anterior.cantidad
+            producto_anterior.save(
+                update_fields=["stock"]
+            )
+
+        super().save(*args, **kwargs)
 
         producto_nuevo = Producto.objects.select_for_update().get(
             pk=self.producto_id
         )
 
-        super().save(*args, **kwargs)
-
         producto_nuevo.stock += self.cantidad
-        producto_nuevo.save(update_fields=["stock"])
+        producto_nuevo.save(
+            update_fields=["stock"]
+        )
 
     @transaction.atomic
     def delete(self, *args, **kwargs):
@@ -195,12 +294,22 @@ class Entrada(models.Model):
             )
 
         producto.stock -= self.cantidad
-        producto.save(update_fields=["stock"])
+        producto.save(
+            update_fields=["stock"]
+        )
 
         return super().delete(*args, **kwargs)
 
 
 class Salida(models.Model):
+    propietario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="salidas",
+        null=True,
+        blank=True,
+    )
+
     producto = models.ForeignKey(
         Producto,
         on_delete=models.PROTECT,
@@ -242,6 +351,17 @@ class Salida(models.Model):
                 }
             )
 
+        if self.propietario_id and self.producto_id:
+            if self.producto.propietario_id != self.propietario_id:
+                raise ValidationError(
+                    {
+                        "producto": (
+                            "El producto seleccionado no pertenece "
+                            "a este usuario."
+                        )
+                    }
+                )
+
     @transaction.atomic
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -256,7 +376,9 @@ class Salida(models.Model):
             )
 
             producto_anterior.stock += salida_anterior.cantidad
-            producto_anterior.save(update_fields=["stock"])
+            producto_anterior.save(
+                update_fields=["stock"]
+            )
 
         producto_nuevo = Producto.objects.select_for_update().get(
             pk=self.producto_id
@@ -275,7 +397,9 @@ class Salida(models.Model):
         super().save(*args, **kwargs)
 
         producto_nuevo.stock -= self.cantidad
-        producto_nuevo.save(update_fields=["stock"])
+        producto_nuevo.save(
+            update_fields=["stock"]
+        )
 
     @transaction.atomic
     def delete(self, *args, **kwargs):
@@ -284,6 +408,8 @@ class Salida(models.Model):
         )
 
         producto.stock += self.cantidad
-        producto.save(update_fields=["stock"])
+        producto.save(
+            update_fields=["stock"]
+        )
 
         return super().delete(*args, **kwargs)

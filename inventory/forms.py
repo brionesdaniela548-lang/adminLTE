@@ -66,12 +66,41 @@ class ProductoForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["categoria"].queryset = Categoria.objects.filter(
-            estado=True
-        ).order_by("nombre")
+        self.user = user
+
+        if user:
+            self.fields["categoria"].queryset = Categoria.objects.filter(
+                propietario=user,
+                estado=True,
+            ).order_by("nombre")
+        else:
+            self.fields["categoria"].queryset = Categoria.objects.none()
+
+    def clean_codigo(self):
+        codigo = self.cleaned_data.get("codigo", "").strip()
+
+        if not codigo:
+            return codigo
+
+        queryset = Producto.objects.filter(
+            propietario=self.user,
+            codigo__iexact=codigo,
+        )
+
+        if self.instance and self.instance.pk:
+            queryset = queryset.exclude(
+                pk=self.instance.pk
+            )
+
+        if queryset.exists():
+            raise forms.ValidationError(
+                "Ya tienes un producto registrado con este código."
+            )
+
+        return codigo
 
     def clean_precio(self):
         precio = self.cleaned_data.get("precio")
@@ -115,6 +144,33 @@ class CategoriaForm(forms.ModelForm):
                 }
             ),
         }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_nombre(self):
+        nombre = self.cleaned_data.get("nombre", "").strip()
+
+        if not nombre:
+            return nombre
+
+        queryset = Categoria.objects.filter(
+            propietario=self.user,
+            nombre__iexact=nombre,
+        )
+
+        if self.instance and self.instance.pk:
+            queryset = queryset.exclude(
+                pk=self.instance.pk
+            )
+
+        if queryset.exists():
+            raise forms.ValidationError(
+                "Ya tienes una categoría registrada con este nombre."
+            )
+
+        return nombre
 
 
 class ProveedorForm(forms.ModelForm):
@@ -170,6 +226,10 @@ class ProveedorForm(forms.ModelForm):
             ),
         }
 
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
 
 class EntradaForm(forms.ModelForm):
 
@@ -212,16 +272,24 @@ class EntradaForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["producto"].queryset = Producto.objects.filter(
-            estado=True
-        ).order_by("nombre")
+        self.user = user
 
-        self.fields["proveedor"].queryset = Proveedor.objects.filter(
-            estado=True
-        ).order_by("nombre")
+        if user:
+            self.fields["producto"].queryset = Producto.objects.filter(
+                propietario=user,
+                estado=True,
+            ).order_by("nombre")
+
+            self.fields["proveedor"].queryset = Proveedor.objects.filter(
+                propietario=user,
+                estado=True,
+            ).order_by("nombre")
+        else:
+            self.fields["producto"].queryset = Producto.objects.none()
+            self.fields["proveedor"].queryset = Proveedor.objects.none()
 
         self.fields["producto"].empty_label = "Seleccione un producto"
         self.fields["proveedor"].empty_label = "Seleccione un proveedor"
@@ -278,19 +346,18 @@ class SalidaForm(forms.ModelForm):
             ),
         }
 
-        labels = {
-            "producto": "Producto",
-            "cantidad": "Cantidad",
-            "destinatario": "Destinatario",
-            "observacion": "Observación",
-        }
-
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["producto"].queryset = Producto.objects.filter(
-            estado=True
-        ).order_by("nombre")
+        self.user = user
+
+        if user:
+            self.fields["producto"].queryset = Producto.objects.filter(
+                propietario=user,
+                estado=True,
+            ).order_by("nombre")
+        else:
+            self.fields["producto"].queryset = Producto.objects.none()
 
         self.fields["producto"].empty_label = "Seleccione un producto"
 

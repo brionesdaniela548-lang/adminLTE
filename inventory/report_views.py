@@ -13,11 +13,31 @@ from .models import Categoria, Entrada, Producto, Proveedor, Salida
 
 @login_required
 def reports(request):
-    total_productos = Producto.objects.count()
-    total_categorias = Categoria.objects.count()
-    total_proveedores = Proveedor.objects.count()
+    productos_usuario = Producto.objects.filter(
+        propietario=request.user
+    )
 
-    stock_total = Producto.objects.aggregate(
+    categorias_usuario = Categoria.objects.filter(
+        propietario=request.user
+    )
+
+    proveedores_usuario = Proveedor.objects.filter(
+        propietario=request.user
+    )
+
+    entradas_usuario = Entrada.objects.filter(
+        propietario=request.user
+    )
+
+    salidas_usuario = Salida.objects.filter(
+        propietario=request.user
+    )
+
+    total_productos = productos_usuario.count()
+    total_categorias = categorias_usuario.count()
+    total_proveedores = proveedores_usuario.count()
+
+    stock_total = productos_usuario.aggregate(
         total=Sum("stock")
     )["total"] or 0
 
@@ -29,24 +49,24 @@ def reports(request):
         ),
     )
 
-    valor_inventario = Producto.objects.aggregate(
+    valor_inventario = productos_usuario.aggregate(
         total=Sum(valor_expression)
     )["total"] or 0
 
-    total_entradas = Entrada.objects.aggregate(
+    total_entradas = entradas_usuario.aggregate(
         total=Sum("cantidad")
     )["total"] or 0
 
-    total_salidas = Salida.objects.aggregate(
+    total_salidas = salidas_usuario.aggregate(
         total=Sum("cantidad")
     )["total"] or 0
 
-    productos_stock_bajo = Producto.objects.filter(
+    productos_stock_bajo = productos_usuario.filter(
         estado=True,
         stock__lte=5,
     ).count()
 
-    productos = Producto.objects.select_related(
+    productos = productos_usuario.select_related(
         "categoria"
     ).annotate(
         valor_total=ExpressionWrapper(
@@ -58,18 +78,22 @@ def reports(request):
         )
     ).order_by("nombre")
 
-    entradas = Entrada.objects.select_related(
+    entradas = entradas_usuario.select_related(
         "producto",
         "proveedor",
     ).order_by("-fecha")
 
-    salidas = Salida.objects.select_related(
+    salidas = salidas_usuario.select_related(
         "producto"
     ).order_by("-fecha")
 
-    categorias = Categoria.objects.annotate(
-        total_productos=Count("productos"),
-        stock_categoria=Sum("productos__stock"),
+    categorias = categorias_usuario.annotate(
+        total_productos=Count(
+            "productos"
+        ),
+        stock_categoria=Sum(
+            "productos__stock"
+        ),
     ).order_by("nombre")
 
     context = {

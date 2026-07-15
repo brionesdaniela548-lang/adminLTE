@@ -1,6 +1,5 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
@@ -17,16 +16,35 @@ from .models import Categoria, Entrada, Producto, Proveedor, Salida
 
 @login_required
 def dashboard(request):
-    total_productos = Producto.objects.count()
-    total_categorias = Categoria.objects.count()
-    total_proveedores = Proveedor.objects.count()
-    total_usuarios = User.objects.count()
+    productos_usuario = Producto.objects.filter(
+        propietario=request.user
+    )
 
-    stock_total = Producto.objects.aggregate(
+    categorias_usuario = Categoria.objects.filter(
+        propietario=request.user
+    )
+
+    proveedores_usuario = Proveedor.objects.filter(
+        propietario=request.user
+    )
+
+    entradas_usuario = Entrada.objects.filter(
+        propietario=request.user
+    )
+
+    salidas_usuario = Salida.objects.filter(
+        propietario=request.user
+    )
+
+    total_productos = productos_usuario.count()
+    total_categorias = categorias_usuario.count()
+    total_proveedores = proveedores_usuario.count()
+
+    stock_total = productos_usuario.aggregate(
         total=Sum("stock")
     )["total"] or 0
 
-    categorias = Categoria.objects.annotate(
+    categorias = categorias_usuario.annotate(
         stock_categoria=Sum("productos__stock")
     ).order_by("nombre")
 
@@ -40,16 +58,16 @@ def dashboard(request):
         for categoria in categorias
     ]
 
-    ultimas_entradas = Entrada.objects.select_related(
+    ultimas_entradas = entradas_usuario.select_related(
         "producto",
         "proveedor",
     ).order_by("-fecha")[:5]
 
-    ultimas_salidas = Salida.objects.select_related(
+    ultimas_salidas = salidas_usuario.select_related(
         "producto"
     ).order_by("-fecha")[:5]
 
-    productos_stock_bajo = Producto.objects.filter(
+    productos_stock_bajo = productos_usuario.filter(
         estado=True,
         stock__lte=5,
     ).order_by("stock")[:5]
@@ -58,7 +76,7 @@ def dashboard(request):
         "total_productos": total_productos,
         "total_categorias": total_categorias,
         "total_proveedores": total_proveedores,
-        "total_usuarios": total_usuarios,
+        "total_usuarios": 1,
         "stock_total": stock_total,
         "nombres_categorias": nombres_categorias,
         "cantidades_productos": cantidades_productos,
@@ -74,11 +92,17 @@ def dashboard(request):
     )
 
 
+# =========================================================
+# PRODUCTOS
+# =========================================================
+
 @login_required
 def products(request):
-    products = Producto.objects.select_related(
+    products = Producto.objects.filter(
+        propietario=request.user
+    ).select_related(
         "categoria"
-    ).all()
+    )
 
     return render(
         request,
@@ -92,10 +116,18 @@ def products(request):
 @login_required
 def product_create(request):
     if request.method == "POST":
-        form = ProductoForm(request.POST)
+        form = ProductoForm(
+            request.POST,
+            user=request.user,
+        )
 
         if form.is_valid():
-            form.save()
+            product = form.save(
+                commit=False
+            )
+
+            product.propietario = request.user
+            product.save()
 
             messages.success(
                 request,
@@ -105,7 +137,9 @@ def product_create(request):
             return redirect("products")
 
     else:
-        form = ProductoForm()
+        form = ProductoForm(
+            user=request.user
+        )
 
     return render(
         request,
@@ -122,16 +156,23 @@ def product_update(request, id):
     product = get_object_or_404(
         Producto,
         id=id,
+        propietario=request.user,
     )
 
     if request.method == "POST":
         form = ProductoForm(
             request.POST,
             instance=product,
+            user=request.user,
         )
 
         if form.is_valid():
-            form.save()
+            product = form.save(
+                commit=False
+            )
+
+            product.propietario = request.user
+            product.save()
 
             messages.success(
                 request,
@@ -143,6 +184,7 @@ def product_update(request, id):
     else:
         form = ProductoForm(
             instance=product,
+            user=request.user,
         )
 
     return render(
@@ -161,6 +203,7 @@ def product_delete(request, id):
     product = get_object_or_404(
         Producto,
         id=id,
+        propietario=request.user,
     )
 
     if request.method == "POST":
@@ -184,9 +227,15 @@ def product_delete(request, id):
     return redirect("products")
 
 
+# =========================================================
+# CATEGORÍAS
+# =========================================================
+
 @login_required
 def categories(request):
-    categories = Categoria.objects.all()
+    categories = Categoria.objects.filter(
+        propietario=request.user
+    )
 
     return render(
         request,
@@ -200,10 +249,18 @@ def categories(request):
 @login_required
 def category_create(request):
     if request.method == "POST":
-        form = CategoriaForm(request.POST)
+        form = CategoriaForm(
+            request.POST,
+            user=request.user,
+        )
 
         if form.is_valid():
-            form.save()
+            category = form.save(
+                commit=False
+            )
+
+            category.propietario = request.user
+            category.save()
 
             messages.success(
                 request,
@@ -213,7 +270,9 @@ def category_create(request):
             return redirect("categories")
 
     else:
-        form = CategoriaForm()
+        form = CategoriaForm(
+            user=request.user
+        )
 
     return render(
         request,
@@ -230,16 +289,23 @@ def category_update(request, id):
     category = get_object_or_404(
         Categoria,
         id=id,
+        propietario=request.user,
     )
 
     if request.method == "POST":
         form = CategoriaForm(
             request.POST,
             instance=category,
+            user=request.user,
         )
 
         if form.is_valid():
-            form.save()
+            category = form.save(
+                commit=False
+            )
+
+            category.propietario = request.user
+            category.save()
 
             messages.success(
                 request,
@@ -251,6 +317,7 @@ def category_update(request, id):
     else:
         form = CategoriaForm(
             instance=category,
+            user=request.user,
         )
 
     return render(
@@ -269,6 +336,7 @@ def category_delete(request, id):
     category = get_object_or_404(
         Categoria,
         id=id,
+        propietario=request.user,
     )
 
     if request.method == "POST":
@@ -292,9 +360,15 @@ def category_delete(request, id):
     return redirect("categories")
 
 
+# =========================================================
+# PROVEEDORES
+# =========================================================
+
 @login_required
 def providers(request):
-    providers = Proveedor.objects.all()
+    providers = Proveedor.objects.filter(
+        propietario=request.user
+    )
 
     return render(
         request,
@@ -308,10 +382,18 @@ def providers(request):
 @login_required
 def provider_create(request):
     if request.method == "POST":
-        form = ProveedorForm(request.POST)
+        form = ProveedorForm(
+            request.POST,
+            user=request.user,
+        )
 
         if form.is_valid():
-            form.save()
+            provider = form.save(
+                commit=False
+            )
+
+            provider.propietario = request.user
+            provider.save()
 
             messages.success(
                 request,
@@ -321,7 +403,9 @@ def provider_create(request):
             return redirect("providers")
 
     else:
-        form = ProveedorForm()
+        form = ProveedorForm(
+            user=request.user
+        )
 
     return render(
         request,
@@ -338,16 +422,23 @@ def provider_update(request, id):
     provider = get_object_or_404(
         Proveedor,
         id=id,
+        propietario=request.user,
     )
 
     if request.method == "POST":
         form = ProveedorForm(
             request.POST,
             instance=provider,
+            user=request.user,
         )
 
         if form.is_valid():
-            form.save()
+            provider = form.save(
+                commit=False
+            )
+
+            provider.propietario = request.user
+            provider.save()
 
             messages.success(
                 request,
@@ -359,6 +450,7 @@ def provider_update(request, id):
     else:
         form = ProveedorForm(
             instance=provider,
+            user=request.user,
         )
 
     return render(
@@ -377,6 +469,7 @@ def provider_delete(request, id):
     provider = get_object_or_404(
         Proveedor,
         id=id,
+        propietario=request.user,
     )
 
     if request.method == "POST":
@@ -400,12 +493,18 @@ def provider_delete(request, id):
     return redirect("providers")
 
 
+# =========================================================
+# ENTRADAS
+# =========================================================
+
 @login_required
 def entries(request):
-    entries = Entrada.objects.select_related(
+    entries = Entrada.objects.filter(
+        propietario=request.user
+    ).select_related(
         "producto",
         "proveedor",
-    ).all()
+    )
 
     return render(
         request,
@@ -419,11 +518,19 @@ def entries(request):
 @login_required
 def entry_create(request):
     if request.method == "POST":
-        form = EntradaForm(request.POST)
+        form = EntradaForm(
+            request.POST,
+            user=request.user,
+        )
 
         if form.is_valid():
             try:
-                form.save()
+                entry = form.save(
+                    commit=False
+                )
+
+                entry.propietario = request.user
+                entry.save()
 
                 messages.success(
                     request,
@@ -442,7 +549,9 @@ def entry_create(request):
                 )
 
     else:
-        form = EntradaForm()
+        form = EntradaForm(
+            user=request.user
+        )
 
     return render(
         request,
@@ -459,17 +568,24 @@ def entry_update(request, id):
     entry = get_object_or_404(
         Entrada,
         id=id,
+        propietario=request.user,
     )
 
     if request.method == "POST":
         form = EntradaForm(
             request.POST,
             instance=entry,
+            user=request.user,
         )
 
         if form.is_valid():
             try:
-                form.save()
+                entry = form.save(
+                    commit=False
+                )
+
+                entry.propietario = request.user
+                entry.save()
 
                 messages.success(
                     request,
@@ -490,6 +606,7 @@ def entry_update(request, id):
     else:
         form = EntradaForm(
             instance=entry,
+            user=request.user,
         )
 
     return render(
@@ -508,6 +625,7 @@ def entry_delete(request, id):
     entry = get_object_or_404(
         Entrada,
         id=id,
+        propietario=request.user,
     )
 
     if request.method == "POST":
@@ -531,11 +649,17 @@ def entry_delete(request, id):
     return redirect("entries")
 
 
+# =========================================================
+# SALIDAS
+# =========================================================
+
 @login_required
 def exits(request):
-    exits = Salida.objects.select_related(
+    exits = Salida.objects.filter(
+        propietario=request.user
+    ).select_related(
         "producto"
-    ).all()
+    )
 
     return render(
         request,
@@ -549,11 +673,19 @@ def exits(request):
 @login_required
 def exit_create(request):
     if request.method == "POST":
-        form = SalidaForm(request.POST)
+        form = SalidaForm(
+            request.POST,
+            user=request.user,
+        )
 
         if form.is_valid():
             try:
-                form.save()
+                exit_record = form.save(
+                    commit=False
+                )
+
+                exit_record.propietario = request.user
+                exit_record.save()
 
                 messages.success(
                     request,
@@ -566,7 +698,10 @@ def exit_create(request):
                 return redirect("exits")
 
             except ValidationError as error:
-                if hasattr(error, "message_dict"):
+                if hasattr(
+                    error,
+                    "message_dict",
+                ):
                     for field, errors in error.message_dict.items():
                         for message in errors:
                             form.add_error(
@@ -580,7 +715,9 @@ def exit_create(request):
                     )
 
     else:
-        form = SalidaForm()
+        form = SalidaForm(
+            user=request.user
+        )
 
     return render(
         request,
@@ -597,17 +734,24 @@ def exit_update(request, id):
     exit_record = get_object_or_404(
         Salida,
         id=id,
+        propietario=request.user,
     )
 
     if request.method == "POST":
         form = SalidaForm(
             request.POST,
             instance=exit_record,
+            user=request.user,
         )
 
         if form.is_valid():
             try:
-                form.save()
+                exit_record = form.save(
+                    commit=False
+                )
+
+                exit_record.propietario = request.user
+                exit_record.save()
 
                 messages.success(
                     request,
@@ -620,7 +764,10 @@ def exit_update(request, id):
                 return redirect("exits")
 
             except ValidationError as error:
-                if hasattr(error, "message_dict"):
+                if hasattr(
+                    error,
+                    "message_dict",
+                ):
                     for field, errors in error.message_dict.items():
                         for message in errors:
                             form.add_error(
@@ -636,6 +783,7 @@ def exit_update(request, id):
     else:
         form = SalidaForm(
             instance=exit_record,
+            user=request.user,
         )
 
     return render(
@@ -654,6 +802,7 @@ def exit_delete(request, id):
     exit_record = get_object_or_404(
         Salida,
         id=id,
+        propietario=request.user,
     )
 
     if request.method == "POST":
@@ -668,17 +817,3 @@ def exit_delete(request, id):
         )
 
     return redirect("exits")
-
-@login_required
-def profile_view(request):
-    profile = Profile.objects.filter(
-        user=request.user
-    ).first()
-
-    return render(
-        request,
-        "accounts/profile.html",
-        {
-            "profile": profile,
-        },
-    )
