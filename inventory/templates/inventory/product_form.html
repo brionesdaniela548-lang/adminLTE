@@ -212,28 +212,17 @@
                                 </div>
 
                                 <div class="form-group">
-
-                                    <div class="custom-control custom-switch">
-
+                                    <div class="form-check">
                                         {{ form.estado }}
-
                                         <label
-                                            class="custom-control-label"
-                                            for="{{ form.estado.id_for_label }}"
-                                        >
+                                                class="form-check-label ml-2"
+                                                for="{{ form.estado.id_for_label }}">
                                             Producto activo
                                         </label>
-
                                     </div>
-
                                     {% for error in form.estado.errors %}
-
-                                        <small class="text-danger d-block">
-                                            {{ error }}
-                                        </small>
-
+                                    <small class="text-danger d-block">{{ error }}</small>
                                     {% endfor %}
-
                                 </div>
 
                             </div>

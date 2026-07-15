@@ -111,7 +111,7 @@ class CategoriaForm(forms.ModelForm):
             ),
             "estado": forms.CheckboxInput(
                 attrs={
-                    "class": "custom-control-input",
+                    "class": "form-check-input",
                 }
             ),
         }
