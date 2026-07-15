@@ -1,291 +1,252 @@
 {% extends "base.html" %}
 
-
 {% block title %}
 Categorías
 {% endblock %}
 
-
-
-{% block content %}
-
-
-<div class="content-wrapper">
-
-
-<section class="content-header">
-
-<div class="container-fluid">
-
-
-<div class="row mb-2">
-
-
-<div class="col-sm-6">
-
-<h1>
-Categorías
-</h1>
-
-</div>
-
-
-<div class="col-sm-6 text-right">
-
-
-<a href="{% url 'category_create' %}"
-   class="btn btn-primary">
-
-
-<i class="fas fa-plus"></i>
-
-Nueva Categoría
-
-
-</a>
-
-
-</div>
-
-
-</div>
-
-
-</div>
-
-</section>
-
-
-
-
-
-<section class="content">
-
-
-<div class="container-fluid">
-
-
-<div class="card">
-
-
-<div class="card-header">
-
-<h3 class="card-title">
-
-Lista de Categorías
-
-</h3>
-
-
-</div>
-
-
-
-
-
-<div class="card-body">
-
-
-
-<table id="categoriesTable"
-       class="table table-bordered table-striped">
-
-
-<thead>
-
-<tr>
-
-<th>
-Nombre
-</th>
-
-<th>
-Descripción
-</th>
-
-<th>
-Estado
-</th>
-
-<th>
-Acciones
-</th>
-
-</tr>
-
-</thead>
-
-
-
-<tbody>
-
-
-{% for category in categories %}
-
-
-<tr>
-
-
-<td>
-{{ category.nombre }}
-</td>
-
-
-<td>
-{{ category.descripcion }}
-</td>
-
-
-
-<td>
-
-
-{% if category.estado %}
-
-
-<span class="badge badge-success">
-Activo
-</span>
-
-
-{% else %}
-
-
-<span class="badge badge-danger">
-Inactivo
-</span>
-
-
-{% endif %}
-
-
-</td>
-
-
-
-<td>
-
-
-<a href="{% url 'category_update' category.id %}"
-class="btn btn-warning btn-sm">
-
-
-<i class="fas fa-edit"></i>
-
-
-</a>
-
-
-
-
-
-<form method="POST"
-action="{% url 'category_delete' category.id %}"
-style="display:inline;">
-
-
-{% csrf_token %}
-
-
-<button class="btn btn-danger btn-sm"
-type="submit">
-
-
-<i class="fas fa-trash"></i>
-
-
-</button>
-
-
-</form>
-
-
-
-</td>
-
-
-
-</tr>
-
-
-
-{% empty %}
-
-
-<tr>
-
-<td colspan="4"
-class="text-center">
-
-
-No existen categorías registradas.
-
-
-</td>
-
-</tr>
-
-
-
-{% endfor %}
-
-
-
-</tbody>
-
-
-</table>
-
-
-
-</div>
-
-
-
-</div>
-
-
-</div>
-
-
-</section>
-
-
-</div>
-
+{% block extra_css %}
+
+<style>
+    #categoriesTable {
+        min-width: 650px;
+    }
+
+    #categoriesTable th,
+    #categoriesTable td {
+        vertical-align: middle;
+    }
+
+    #categoriesTable th:not(:nth-child(2)),
+    #categoriesTable td:not(:nth-child(2)) {
+        white-space: nowrap;
+    }
+</style>
 
 {% endblock %}
 
+{% block content %}
 
+<div class="content-wrapper">
 
+    <section class="content-header">
 
+        <div class="container-fluid">
 
+            <div class="row mb-2">
+
+                <div class="col-sm-6">
+
+                    <h1>
+                        Categorías
+                    </h1>
+
+                </div>
+
+                <div class="col-sm-6 text-sm-right mt-2 mt-sm-0">
+
+                    <a
+                        href="{% url 'category_create' %}"
+                        class="btn btn-primary"
+                    >
+
+                        <i class="fas fa-plus"></i>
+                        Nueva Categoría
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="content">
+
+        <div class="container-fluid">
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="alert
+                        {% if message.tags == 'success' %}
+                            alert-success
+                        {% elif message.tags == 'error' %}
+                            alert-danger
+                        {% else %}
+                            alert-info
+                        {% endif %}
+                        alert-dismissible fade show"
+                    >
+
+                        {{ message }}
+
+                        <button
+                            type="button"
+                            class="close"
+                            data-dismiss="alert"
+                        >
+
+                            <span>&times;</span>
+
+                        </button>
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h3 class="card-title">
+                        Lista de categorías
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="table-responsive">
+
+                        <table
+                            id="categoriesTable"
+                            class="table table-bordered table-striped table-hover"
+                        >
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {% for category in categories %}
+
+                                    <tr>
+
+                                        <td>
+                                            {{ category.nombre }}
+                                        </td>
+
+                                        <td>
+                                            {{ category.descripcion|default:"Sin descripción" }}
+                                        </td>
+
+                                        <td>
+
+                                            {% if category.estado %}
+
+                                                <span class="badge badge-success">
+                                                    Activa
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="badge badge-danger">
+                                                    Inactiva
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+                                        <td>
+
+                                            <a
+                                                href="{% url 'category_update' category.id %}"
+                                                class="btn btn-warning btn-sm"
+                                                title="Editar"
+                                            >
+
+                                                <i class="fas fa-edit"></i>
+
+                                            </a>
+
+                                            <form
+                                                method="POST"
+                                                action="{% url 'category_delete' category.id %}"
+                                                class="d-inline"
+                                                onsubmit="return confirm('¿Está seguro de eliminar esta categoría?');"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-danger btn-sm"
+                                                    title="Eliminar"
+                                                >
+
+                                                    <i class="fas fa-trash"></i>
+
+                                                </button>
+
+                                            </form>
+
+                                        </td>
+
+                                    </tr>
+
+                                {% empty %}
+
+                                    <tr>
+
+                                        <td
+                                            colspan="4"
+                                            class="text-center"
+                                        >
+
+                                            No existen categorías registradas.
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
 
 {% block extra_js %}
 
-
 <script>
-
-$(function(){
-
-
-$("#categoriesTable").DataTable({
-
-"language": {
-
-"url":
-"//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-
-}
-
-
-});
-
-
-});
-
-
+    $(function () {
+        $("#categoriesTable").DataTable({
+            autoWidth: false,
+            pageLength: 10,
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+            }
+        });
+    });
 </script>
-
 
 {% endblock %}

@@ -4,11 +4,30 @@
 Productos
 {% endblock %}
 
+{% block extra_css %}
+
+<style>
+    #productsTable {
+        min-width: 900px;
+    }
+
+    #productsTable th,
+    #productsTable td {
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    #productsTable td:nth-child(2),
+    #productsTable td:nth-child(3) {
+        white-space: normal;
+    }
+</style>
+
+{% endblock %}
 
 {% block content %}
 
 <div class="content-wrapper">
-
 
     <section class="content-header">
 
@@ -24,11 +43,12 @@ Productos
 
                 </div>
 
+                <div class="col-sm-6 text-sm-right mt-2 mt-sm-0">
 
-                <div class="col-sm-6 text-right">
-
-                    <a href="{% url 'product_create' %}"
-                       class="btn btn-primary">
+                    <a
+                        href="{% url 'product_create' %}"
+                        class="btn btn-primary"
+                    >
 
                         <i class="fas fa-plus"></i>
                         Nuevo Producto
@@ -43,16 +63,44 @@ Productos
 
     </section>
 
-
-
-
     <section class="content">
 
         <div class="container-fluid">
 
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="alert
+                        {% if message.tags == 'success' %}
+                            alert-success
+                        {% elif message.tags == 'error' %}
+                            alert-danger
+                        {% else %}
+                            alert-info
+                        {% endif %}
+                        alert-dismissible fade show"
+                    >
+
+                        {{ message }}
+
+                        <button
+                            type="button"
+                            class="close"
+                            data-dismiss="alert"
+                        >
+
+                            <span>&times;</span>
+
+                        </button>
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
 
             <div class="card">
-
 
                 <div class="card-header">
 
@@ -62,196 +110,179 @@ Productos
 
                 </div>
 
-
-
                 <div class="card-body">
 
+                    <div class="table-responsive">
 
-                    <table id="productsTable" class="table table-bordered table-striped">
+                        <table
+                            id="productsTable"
+                            class="table table-bordered table-striped table-hover"
+                        >
 
+                            <thead>
 
-                        <thead>
+                                <tr>
 
-                            <tr>
+                                    <th>Código</th>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th>Stock</th>
+                                    <th>Precio</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
 
-                                <th>Código</th>
+                                </tr>
 
-                                <th>Producto</th>
+                            </thead>
 
-                                <th>Categoría</th>
+                            <tbody>
 
-                                <th>Stock</th>
+                                {% for product in products %}
 
-                                <th>Precio</th>
+                                    <tr>
 
-                                <th>Estado</th>
+                                        <td>
+                                            {{ product.codigo }}
+                                        </td>
 
-                                <th width="180">
-                                    Acciones
-                                </th>
+                                        <td>
+                                            {{ product.nombre }}
+                                        </td>
 
+                                        <td>
+                                            {{ product.categoria }}
+                                        </td>
 
-                            </tr>
+                                        <td>
 
-                        </thead>
+                                            {% if product.stock == 0 %}
 
+                                                <span class="badge badge-danger">
+                                                    Agotado
+                                                </span>
 
+                                            {% elif product.stock <= 5 %}
 
-                        <tbody>
+                                                <span class="badge badge-warning">
+                                                    {{ product.stock }}
+                                                </span>
 
+                                            {% else %}
 
-                        {% for product in products %}
+                                                <span class="badge badge-success">
+                                                    {{ product.stock }}
+                                                </span>
 
+                                            {% endif %}
 
-                            <tr>
+                                        </td>
 
-                                <td>
-                                    {{ product.codigo }}
-                                </td>
+                                        <td>
+                                            ${{ product.precio|floatformat:2 }}
+                                        </td>
 
+                                        <td>
 
-                                <td>
-                                    {{ product.nombre }}
-                                </td>
+                                            {% if product.estado %}
 
+                                                <span class="badge badge-success">
+                                                    Activo
+                                                </span>
 
-                                <td>
-                                    {{ product.categoria }}
-                                </td>
+                                            {% else %}
 
+                                                <span class="badge badge-danger">
+                                                    Inactivo
+                                                </span>
 
-                                <td>
-                                    {{ product.stock }}
-                                </td>
+                                            {% endif %}
 
+                                        </td>
 
-                                <td>
-                                    ${{ product.precio }}
-                                </td>
+                                        <td>
 
+                                            <a
+                                                href="{% url 'product_update' product.id %}"
+                                                class="btn btn-warning btn-sm"
+                                                title="Editar"
+                                            >
 
-                                <td>
+                                                <i class="fas fa-edit"></i>
 
+                                            </a>
 
-                                    {% if product.estado %}
+                                            <form
+                                                method="POST"
+                                                action="{% url 'product_delete' product.id %}"
+                                                class="d-inline"
+                                                onsubmit="return confirm('¿Está seguro de eliminar este producto?');"
+                                            >
 
-                                        <span class="badge badge-success">
-                                            Activo
-                                        </span>
+                                                {% csrf_token %}
 
-                                    {% else %}
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-danger btn-sm"
+                                                    title="Eliminar"
+                                                >
 
-                                        <span class="badge badge-danger">
-                                            Inactivo
-                                        </span>
+                                                    <i class="fas fa-trash"></i>
 
-                                    {% endif %}
+                                                </button>
 
+                                            </form>
 
-                                </td>
+                                        </td>
 
+                                    </tr>
 
+                                {% empty %}
 
-                                <td>
+                                    <tr>
 
+                                        <td
+                                            colspan="7"
+                                            class="text-center"
+                                        >
 
-                                    <a href="{% url 'product_update' product.id %}"
-                                       class="btn btn-warning btn-sm">
+                                            No existen productos registrados.
 
-                                        <i class="fas fa-edit"></i>
+                                        </td>
 
-                                    </a>
+                                    </tr>
 
+                                {% endfor %}
 
+                            </tbody>
 
+                        </table>
 
-                                    <form method="POST"
-                                          action="{% url 'product_delete' product.id %}"
-                                          style="display:inline;">
-
-
-                                        {% csrf_token %}
-
-
-                                        <button type="submit"
-                                                class="btn btn-danger btn-sm">
-
-                                            <i class="fas fa-trash"></i>
-
-                                        </button>
-
-
-                                    </form>
-
-
-                                </td>
-
-
-                            </tr>
-
-
-                        {% empty %}
-
-
-                            <tr>
-
-                                <td colspan="7"
-                                    class="text-center">
-
-                                    No existen productos registrados.
-
-                                </td>
-
-                            </tr>
-
-
-                        {% endfor %}
-
-
-                        </tbody>
-
-
-                    </table>
-
+                    </div>
 
                 </div>
 
-
             </div>
-
 
         </div>
 
-
     </section>
 
-
 </div>
-{% block extra_js %}
-
-<script>
-
-$(function () {
-
-    $("#productsTable").DataTable({
-
-        "language": {
-
-            "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-
-        },
-
-        "responsive": true,
-
-        "autoWidth": false
-
-    });
-
-});
-
-</script>
 
 {% endblock %}
 
+{% block extra_js %}
+
+<script>
+    $(function () {
+        $("#productsTable").DataTable({
+            autoWidth: false,
+            pageLength: 10,
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+            }
+        });
+    });
+</script>
 
 {% endblock %}
