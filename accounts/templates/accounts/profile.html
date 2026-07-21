@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
 Mi Perfil
@@ -46,6 +47,37 @@ Mi Perfil
 
         <div class="container-fluid">
 
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="alert
+                        {% if message.tags == 'success' %}
+                            alert-success
+                        {% elif message.tags == 'error' %}
+                            alert-danger
+                        {% else %}
+                            alert-info
+                        {% endif %}
+                        alert-dismissible fade show"
+                    >
+
+                        {{ message }}
+
+                        <button
+                            type="button"
+                            class="close"
+                            data-dismiss="alert"
+                        >
+                            <span>&times;</span>
+                        </button>
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
             <div class="row">
 
                 <div class="col-md-4">
@@ -56,20 +88,35 @@ Mi Perfil
 
                             <div class="text-center">
 
-                                <i class="fas fa-user-circle fa-6x text-primary"></i>
+                                {% if profile.foto %}
+
+                                    <img
+                                        src="{{ profile.foto.url }}"
+                                        alt="Foto de perfil"
+                                        class="profile-user-img img-fluid img-circle"
+                                        style="width: 130px; height: 130px; object-fit: cover;"
+                                    >
+
+                                {% else %}
+
+                                    <i class="fas fa-user-circle fa-7x text-primary"></i>
+
+                                {% endif %}
 
                             </div>
 
                             <h3 class="profile-username text-center mt-3">
 
-                                {{ user.get_full_name|default:user.username }}
+                                {% if user.get_full_name %}
+                                    {{ user.get_full_name }}
+                                {% else %}
+                                    {{ user.username }}
+                                {% endif %}
 
                             </h3>
 
                             <p class="text-muted text-center">
-
                                 {{ user.username }}
-
                             </p>
 
                             <ul class="list-group list-group-unbordered mb-3">
@@ -79,27 +126,7 @@ Mi Perfil
                                     <b>Correo</b>
 
                                     <span class="float-right">
-                                        {{ user.email|default:"Sin correo" }}
-                                    </span>
-
-                                </li>
-
-                                <li class="list-group-item">
-
-                                    <b>Nombre</b>
-
-                                    <span class="float-right">
-                                        {{ user.first_name|default:"Sin nombre" }}
-                                    </span>
-
-                                </li>
-
-                                <li class="list-group-item">
-
-                                    <b>Apellido</b>
-
-                                    <span class="float-right">
-                                        {{ user.last_name|default:"Sin apellido" }}
+                                        {{ user.email }}
                                     </span>
 
                                 </li>
@@ -116,6 +143,17 @@ Mi Perfil
 
                             </ul>
 
+                            <a href="{% url 'password_change' %}"
+                               class="btn btn-warning btn-block"
+                            >
+                                <i class="fas fa-key mr-1"></i>Cambiar contraseña
+                            </a>
+                            <a href="{% url 'security_question_update' %}"
+                               class="btn btn-info btn-block">
+                                <i class="fas fa-shield-alt mr-1"></i>
+                                Cambiar pregunta de seguridad
+                            </a>
+
                         </div>
 
                     </div>
@@ -124,46 +162,114 @@ Mi Perfil
 
                 <div class="col-md-8">
 
-                    <div class="card">
+                    <div class="card card-primary">
 
                         <div class="card-header">
 
                             <h3 class="card-title">
 
-                                <i class="fas fa-shield-alt mr-1"></i>
-
-                                Seguridad de la cuenta
+                                <i class="fas fa-user-edit mr-1"></i>
+                                Editar perfil
 
                             </h3>
 
                         </div>
 
-                        <div class="card-body">
+                        <form
+                            method="POST"
+                            enctype="multipart/form-data"
+                            novalidate
+                        >
 
-                            <div class="form-group">
+                            {% csrf_token %}
 
-                                <label>
-                                    Pregunta de seguridad
-                                </label>
+                            <div class="card-body">
 
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    value="{% if profile %}{{ profile.get_security_question_display }}{% else %}No configurada{% endif %}"
-                                    readonly
+                                <div class="form-group">
+
+                                    <label for="{{ user_form.first_name.id_for_label }}">
+                                        Nombres
+                                    </label>
+
+                                    {{ user_form.first_name }}
+
+                                    {% for error in user_form.first_name.errors %}
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ user_form.last_name.id_for_label }}">
+                                        Apellidos
+                                    </label>
+
+                                    {{ user_form.last_name }}
+
+                                    {% for error in user_form.last_name.errors %}
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ user_form.email.id_for_label }}">
+                                        Correo electrónico
+                                    </label>
+
+                                    {{ user_form.email }}
+
+                                    {% for error in user_form.email.errors %}
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ photo_form.foto.id_for_label }}">
+                                        Foto de perfil
+                                    </label>
+
+                                    {{ photo_form.foto }}
+
+                                    {% for error in photo_form.foto.errors %}
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+                                    {% endfor %}
+
+                                    <small class="form-text text-muted">
+                                        Formatos permitidos: JPG, PNG y WEBP. Máximo 5 MB.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                            <div class="card-footer">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary"
                                 >
 
-                            </div>
+                                    <i class="fas fa-save mr-1"></i>
+                                    Guardar cambios
 
-                            <div class="alert alert-info">
-
-                                <i class="fas fa-info-circle"></i>
-
-                                La respuesta de seguridad no se muestra por protección.
+                                </button>
 
                             </div>
 
-                        </div>
+                        </form>
 
                     </div>
 

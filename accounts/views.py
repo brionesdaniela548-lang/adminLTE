@@ -1,44 +1,74 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import (
+    authenticate,
+    login,
+    logout,
+    update_session_auth_hash,
+)
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.hashers import (
+    check_password,
+    make_password,
+)
 from django.contrib.auth.models import User
-from django.shortcuts import redirect, render
+from django.shortcuts import (
+    redirect,
+    render,
+)
 
 from .forms import (
-    NewPasswordForm,
-    RecoverUserForm,
+    ProfilePhotoForm,
+    RecoverPasswordForm,
     RegisterForm,
+    ResetPasswordForm,
     SecurityAnswerForm,
+    SecurityQuestionUpdateForm,
+    UserProfileForm,
 )
 from .models import Profile
 
 
 def register(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
     if request.method == "POST":
         form = RegisterForm(request.POST)
 
         if form.is_valid():
-            user = form.save(commit=False)
+            user = form.save(
+                commit=False
+            )
 
             user.set_password(
                 form.cleaned_data["password1"]
             )
 
+            user.email = form.cleaned_data[
+                "email"
+            ].strip().lower()
+
             user.save()
 
             Profile.objects.create(
                 user=user,
-                security_question=form.cleaned_data[
-                    "security_question"
+                pregunta_seguridad=form.cleaned_data[
+                    "pregunta_seguridad"
                 ],
-                security_answer=form.cleaned_data[
-                    "security_answer"
-                ].strip().lower(),
+                respuesta_seguridad=make_password(
+                    form.cleaned_data[
+                        "respuesta_seguridad"
+                    ].strip().lower()
+                ),
             )
 
             messages.success(
                 request,
-                "Cuenta creada correctamente. Ya puedes iniciar sesión.",
+                (
+                    "Cuenta creada correctamente. "
+                    "Ya puedes iniciar sesión."
+                ),
             )
 
             return redirect("login")
@@ -105,54 +135,216 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    profile = Profile.objects.filter(
+    profile, _ = Profile.objects.get_or_create(
         user=request.user
-    ).first()
+    )
+
+    if request.method == "POST":
+        user_form = UserProfileForm(
+            request.POST,
+            instance=request.user,
+        )
+
+        photo_form = ProfilePhotoForm(
+            request.POST,
+            request.FILES,
+            instance=profile,
+        )
+
+        if user_form.is_valid() and photo_form.is_valid():
+            user_form.save()
+            photo_form.save()
+
+            messages.success(
+                request,
+                "Tu perfil fue actualizado correctamente.",
+            )
+
+            return redirect("profile")
+
+    else:
+        user_form = UserProfileForm(
+            instance=request.user
+        )
+
+        photo_form = ProfilePhotoForm(
+            instance=profile
+        )
 
     return render(
         request,
         "accounts/profile.html",
         {
             "profile": profile,
+            "user_form": user_form,
+            "photo_form": photo_form,
+        },
+    )
+
+
+@login_required
+def password_change_view(request):
+    if request.method == "POST":
+        form = PasswordChangeForm(
+            request.user,
+            request.POST,
+        )
+
+        if form.is_valid():
+            user = form.save()
+
+            update_session_auth_hash(
+                request,
+                user,
+            )
+
+            messages.success(
+                request,
+                "Tu contraseña fue cambiada correctamente.",
+            )
+
+            return redirect("profile")
+
+    else:
+        form = PasswordChangeForm(
+            request.user
+        )
+
+    for field in form.fields.values():
+        field.widget.attrs.update(
+            {
+                "class": "form-control",
+            }
+        )
+
+    return render(
+        request,
+        "accounts/password_change.html",
+        {
+            "form": form,
+        },
+    )
+
+
+@login_required
+def security_question_update_view(request):
+    profile, _ = Profile.objects.get_or_create(
+        user=request.user
+    )
+
+    if request.method == "POST":
+        form = SecurityQuestionUpdateForm(
+            request.POST,
+            instance=profile,
+        )
+
+        if form.is_valid():
+            profile = form.save(
+                commit=False
+            )
+
+            profile.respuesta_seguridad = make_password(
+                form.cleaned_data[
+                    "respuesta_seguridad"
+                ].strip().lower()
+            )
+
+            profile.save()
+
+            messages.success(
+                request,
+                (
+                    "La pregunta y la respuesta de seguridad "
+                    "fueron actualizadas correctamente."
+                ),
+            )
+
+            return redirect("profile")
+
+    else:
+        form = SecurityQuestionUpdateForm(
+            instance=profile,
+            initial={
+                "respuesta_seguridad": "",
+            },
+        )
+
+    return render(
+        request,
+        "accounts/security_question_update.html",
+        {
+            "form": form,
         },
     )
 
 
 def recover_password(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
+    request.session.pop(
+        "recovery_user_id",
+        None,
+    )
+
+    request.session.pop(
+        "recovery_verified",
+        None,
+    )
+
     if request.method == "POST":
-        form = RecoverUserForm(request.POST)
+        form = RecoverPasswordForm(
+            request.POST
+        )
 
         if form.is_valid():
             username = form.cleaned_data[
                 "username"
             ].strip()
 
-            try:
-                user = User.objects.get(
-                    username=username
-                )
+            user = User.objects.filter(
+                username__iexact=username,
+                is_active=True,
+            ).first()
 
-                request.session[
-                    "recover_user"
-                ] = user.id
-
-                request.session.pop(
-                    "security_answer_verified",
-                    None,
-                )
-
-                return redirect(
-                    "security_question"
-                )
-
-            except User.DoesNotExist:
+            if user is None:
                 messages.error(
                     request,
-                    "El usuario no existe.",
+                    "No existe un usuario activo con ese nombre.",
                 )
 
+            else:
+                profile, _ = Profile.objects.get_or_create(
+                    user=user
+                )
+
+                if (
+                    not profile.pregunta_seguridad
+                    or not profile.respuesta_seguridad
+                ):
+                    messages.error(
+                        request,
+                        (
+                            "Este usuario no tiene configurada "
+                            "una pregunta de seguridad."
+                        ),
+                    )
+
+                else:
+                    request.session[
+                        "recovery_user_id"
+                    ] = user.id
+
+                    request.session[
+                        "recovery_verified"
+                    ] = False
+
+                    return redirect(
+                        "security_question"
+                    )
+
     else:
-        form = RecoverUserForm()
+        form = RecoverPasswordForm()
 
     return render(
         request,
@@ -164,48 +356,62 @@ def recover_password(request):
 
 
 def security_question(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
     user_id = request.session.get(
-        "recover_user"
+        "recovery_user_id"
     )
 
     if not user_id:
-        return redirect(
-            "recover_password"
-        )
-
-    try:
-        user = User.objects.get(
-            id=user_id
-        )
-
-        profile = Profile.objects.get(
-            user=user
-        )
-
-    except User.DoesNotExist:
-        request.session.pop(
-            "recover_user",
-            None,
-        )
-
         messages.error(
             request,
-            "El usuario ya no existe.",
+            "Primero debes ingresar tu nombre de usuario.",
         )
 
         return redirect(
             "recover_password"
         )
 
-    except Profile.DoesNotExist:
+    user = User.objects.filter(
+        id=user_id,
+        is_active=True,
+    ).first()
+
+    if user is None:
         request.session.pop(
-            "recover_user",
+            "recovery_user_id",
+            None,
+        )
+
+        request.session.pop(
+            "recovery_verified",
             None,
         )
 
         messages.error(
             request,
-            "El usuario no tiene una pregunta de seguridad configurada.",
+            "No se pudo encontrar el usuario.",
+        )
+
+        return redirect(
+            "recover_password"
+        )
+
+    profile, _ = Profile.objects.get_or_create(
+        user=user
+    )
+
+    if (
+        not profile.pregunta_seguridad
+        or not profile.respuesta_seguridad
+    ):
+        messages.error(
+            request,
+            (
+                "Este usuario no tiene configurada "
+                "una pregunta de seguridad."
+            ),
         )
 
         return redirect(
@@ -218,13 +424,18 @@ def security_question(request):
         )
 
         if form.is_valid():
-            answer = form.cleaned_data[
-                "answer"
+            respuesta = form.cleaned_data[
+                "respuesta"
             ].strip().lower()
 
-            if answer == profile.security_answer:
+            respuesta_correcta = check_password(
+                respuesta,
+                profile.respuesta_seguridad,
+            )
+
+            if respuesta_correcta:
                 request.session[
-                    "security_answer_verified"
+                    "recovery_verified"
                 ] = True
 
                 return redirect(
@@ -233,7 +444,7 @@ def security_question(request):
 
             messages.error(
                 request,
-                "Respuesta incorrecta.",
+                "La respuesta de seguridad es incorrecta.",
             )
 
     else:
@@ -244,44 +455,57 @@ def security_question(request):
         "accounts/security_question.html",
         {
             "form": form,
-            "question": profile.get_security_question_display(),
+            "username": user.username,
+            "pregunta": profile.get_pregunta_seguridad_display(),
         },
     )
 
 
 def reset_password(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
     user_id = request.session.get(
-        "recover_user"
+        "recovery_user_id"
     )
 
-    answer_verified = request.session.get(
-        "security_answer_verified"
+    recovery_verified = request.session.get(
+        "recovery_verified",
+        False,
     )
 
-    if not user_id or not answer_verified:
+    if not user_id or not recovery_verified:
+        messages.error(
+            request,
+            (
+                "Debes responder correctamente la "
+                "pregunta de seguridad."
+            ),
+        )
+
         return redirect(
             "recover_password"
         )
 
-    try:
-        user = User.objects.get(
-            id=user_id
-        )
+    user = User.objects.filter(
+        id=user_id,
+        is_active=True,
+    ).first()
 
-    except User.DoesNotExist:
+    if user is None:
         request.session.pop(
-            "recover_user",
+            "recovery_user_id",
             None,
         )
 
         request.session.pop(
-            "security_answer_verified",
+            "recovery_verified",
             None,
         )
 
         messages.error(
             request,
-            "El usuario ya no existe.",
+            "No se pudo encontrar el usuario.",
         )
 
         return redirect(
@@ -289,27 +513,36 @@ def reset_password(request):
         )
 
     if request.method == "POST":
-        form = NewPasswordForm(
-            user,
+        form = ResetPasswordForm(
             request.POST,
+            user=user,
         )
 
         if form.is_valid():
-            form.save()
+            user.set_password(
+                form.cleaned_data[
+                    "password1"
+                ]
+            )
+
+            user.save()
 
             request.session.pop(
-                "recover_user",
+                "recovery_user_id",
                 None,
             )
 
             request.session.pop(
-                "security_answer_verified",
+                "recovery_verified",
                 None,
             )
 
             messages.success(
                 request,
-                "Contraseña cambiada correctamente.",
+                (
+                    "Tu contraseña fue restablecida "
+                    "correctamente. Ya puedes iniciar sesión."
+                ),
             )
 
             return redirect(
@@ -317,8 +550,8 @@ def reset_password(request):
             )
 
     else:
-        form = NewPasswordForm(
-            user
+        form = ResetPasswordForm(
+            user=user
         )
 
     return render(
@@ -326,5 +559,6 @@ def reset_password(request):
         "accounts/reset_password.html",
         {
             "form": form,
+            "username": user.username,
         },
     )

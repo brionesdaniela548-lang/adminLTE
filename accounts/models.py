@@ -1,29 +1,57 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 
 
 class Profile(models.Model):
-
-    PREGUNTAS = [
-        ("mascota", "¿Cuál fue el nombre de tu primera mascota?"),
-        ("escuela", "¿Cuál fue el nombre de tu escuela primaria?"),
-        ("ciudad", "¿En qué ciudad naciste?"),
-        ("madre", "¿Cuál es el segundo nombre de tu madre?"),
-        ("comida", "¿Cuál es tu comida favorita?"),
+    SECURITY_QUESTIONS = [
+        (
+            "mascota",
+            "¿Cuál era el nombre de tu primera mascota?",
+        ),
+        (
+            "ciudad",
+            "¿En qué ciudad naciste?",
+        ),
+        (
+            "escuela",
+            "¿Cuál era el nombre de tu primera escuela?",
+        ),
+        (
+            "amigo",
+            "¿Cuál era el nombre de tu mejor amigo de la infancia?",
+        ),
+        (
+            "comida",
+            "¿Cuál es tu comida favorita?",
+        ),
     ]
 
     user = models.OneToOneField(
         User,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="profile",
     )
 
-    security_question = models.CharField(
+    foto = models.ImageField(
+        upload_to="profiles/",
+        blank=True,
+        null=True,
+        verbose_name="Foto de perfil",
+    )
+
+    pregunta_seguridad = models.CharField(
         max_length=50,
-        choices=PREGUNTAS
+        choices=SECURITY_QUESTIONS,
+        blank=True,
+        default="",
+        verbose_name="Pregunta de seguridad",
     )
 
-    security_answer = models.CharField(
-        max_length=100
+    respuesta_seguridad = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        verbose_name="Respuesta de seguridad",
     )
 
     def __str__(self):

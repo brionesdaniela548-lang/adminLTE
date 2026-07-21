@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}
+Cambiar pregunta de seguridad
+{% endblock %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <section class="content-header">
+
+        <div class="container-fluid">
+
+            <div class="row mb-2">
+
+                <div class="col-sm-6">
+                    <h1>Cambiar pregunta de seguridad</h1>
+                </div>
+
+                <div class="col-sm-6">
+
+                    <ol class="breadcrumb float-sm-right">
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'dashboard' %}">
+                                Inicio
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'profile' %}">
+                                Mi perfil
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item active">
+                            Pregunta de seguridad
+                        </li>
+
+                    </ol>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="content">
+
+        <div class="container-fluid">
+
+            <div class="row justify-content-center">
+
+                <div class="col-md-7">
+
+                    <div class="card card-info">
+
+                        <div class="card-header">
+
+                            <h3 class="card-title">
+
+                                <i class="fas fa-shield-alt mr-1"></i>
+                                Configurar pregunta de seguridad
+
+                            </h3>
+
+                        </div>
+
+                        <form method="POST" novalidate>
+
+                            {% csrf_token %}
+
+                            <div class="card-body">
+
+                                {% if messages %}
+
+                                    {% for message in messages %}
+
+                                        <div class="alert
+                                            {% if message.tags == 'success' %}
+                                                alert-success
+                                            {% elif message.tags == 'error' %}
+                                                alert-danger
+                                            {% else %}
+                                                alert-info
+                                            {% endif %}
+                                            alert-dismissible fade show"
+                                        >
+
+                                            {{ message }}
+
+                                            <button
+                                                type="button"
+                                                class="close"
+                                                data-dismiss="alert"
+                                            >
+                                                <span>&times;</span>
+                                            </button>
+
+                                        </div>
+
+                                    {% endfor %}
+
+                                {% endif %}
+
+                                {% if form.non_field_errors %}
+
+                                    <div class="alert alert-danger">
+
+                                        {% for error in form.non_field_errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+
+                                    </div>
+
+                                {% endif %}
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.pregunta_seguridad.id_for_label }}">
+                                        Pregunta de seguridad
+                                    </label>
+
+                                    {{ form.pregunta_seguridad }}
+
+                                    {% for error in form.pregunta_seguridad.errors %}
+
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="{{ form.respuesta_seguridad.id_for_label }}">
+                                        Respuesta de seguridad
+                                    </label>
+
+                                    {{ form.respuesta_seguridad }}
+
+                                    {% for error in form.respuesta_seguridad.errors %}
+
+                                        <small class="text-danger d-block">
+                                            {{ error }}
+                                        </small>
+
+                                    {% endfor %}
+
+                                    <small class="form-text text-muted">
+                                        Recuerda esta respuesta, porque la necesitarás para recuperar tu contraseña.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                            <div class="card-footer">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-info"
+                                >
+
+                                    <i class="fas fa-save mr-1"></i>
+                                    Guardar pregunta de seguridad
+
+                                </button>
+
+                                <a
+                                    href="{% url 'profile' %}"
+                                    class="btn btn-secondary"
+                                >
+
+                                    <i class="fas fa-arrow-left mr-1"></i>
+                                    Volver
+
+                                </a>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
